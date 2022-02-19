@@ -1,0 +1,24 @@
+{
+  "name": "BabyJulia",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "antlr4ts": "^0.5.0-alpha.4",
+    "typescript": "^4.5.5"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "antlr4ts-cli": "^0.5.0-alpha.4",
+    "eslint": "^8.9.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.4"
+  },
+  "scripts": {
+    "antlr4ts": "antlr4ts -visitor ./src/lang/BabyJulia.g4",
+    "build": "yarn tsc", 
+    "parse": "node dist/index.js {0}"
+  }
+}
