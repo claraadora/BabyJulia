@@ -1,5 +1,4 @@
 import { ExprSequenceContext, NameContext } from "./../lang/BabyJuliaParser";
-import { ExpressionSequence, Name } from "../types/types";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
 import { ErrorNode } from "antlr4ts/tree/ErrorNode";
@@ -15,7 +14,13 @@ import {
   ExprContext,
 } from "../lang/BabyJuliaParser";
 import { BabyJuliaLexer } from "../lang/BabyJuliaLexer";
-import { VariableDeclaration, Literal, Node } from "../types/types";
+import {
+  ExpressionSequence,
+  VariableDeclaration,
+  Literal,
+  Node,
+  Name,
+} from "./../types/types";
 class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitVarDeclaration(ctx: VarDeclarationContext): VariableDeclaration {
     // console.log("var declaration");
@@ -62,13 +67,9 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return tree.accept(this);
   }
 
-  visitChildren(node: RuleNode): Node {
-    console.log("children");
-  }
+  visitChildren(node: RuleNode): Node {}
 
-  visitTerminal(node: TerminalNode): Node {
-    console.log("terminal");
-  }
+  visitTerminal(node: TerminalNode): Node {}
 
   visitErrorNode(node: ErrorNode): Node {
     throw new Error("Invalid syntax!");
