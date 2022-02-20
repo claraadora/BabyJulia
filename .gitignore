@@ -1,4 +1,4 @@
 dist
 node_modules
-src/lang
+src/lang/*
 !src/lang/BabyJulia.g4
