@@ -5,7 +5,8 @@ import { ParseTreeVisitor } from "antlr4ts/tree/ParseTreeVisitor";
 
 import { VarDeclarationContext } from "./BabyJuliaParser";
 import { LiteralContext } from "./BabyJuliaParser";
-import { ProgContext } from "./BabyJuliaParser";
+import { NameContext } from "./BabyJuliaParser";
+import { ExprSequenceContext } from "./BabyJuliaParser";
 import { ExprContext } from "./BabyJuliaParser";
 import { AtomContext } from "./BabyJuliaParser";
 
@@ -35,11 +36,19 @@ export interface BabyJuliaVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitLiteral?: (ctx: LiteralContext) => Result;
 
 	/**
-	 * Visit a parse tree produced by `BabyJuliaParser.prog`.
+	 * Visit a parse tree produced by the `Name`
+	 * labeled alternative in `BabyJuliaParser.expr`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	visitProg?: (ctx: ProgContext) => Result;
+	visitName?: (ctx: NameContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `BabyJuliaParser.exprSequence`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitExprSequence?: (ctx: ExprSequenceContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `BabyJuliaParser.expr`.

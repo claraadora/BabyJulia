@@ -5,7 +5,8 @@ import { ParseTreeListener } from "antlr4ts/tree/ParseTreeListener";
 
 import { VarDeclarationContext } from "./BabyJuliaParser";
 import { LiteralContext } from "./BabyJuliaParser";
-import { ProgContext } from "./BabyJuliaParser";
+import { NameContext } from "./BabyJuliaParser";
+import { ExprSequenceContext } from "./BabyJuliaParser";
 import { ExprContext } from "./BabyJuliaParser";
 import { AtomContext } from "./BabyJuliaParser";
 
@@ -42,15 +43,28 @@ export interface BabyJuliaListener extends ParseTreeListener {
 	exitLiteral?: (ctx: LiteralContext) => void;
 
 	/**
-	 * Enter a parse tree produced by `BabyJuliaParser.prog`.
+	 * Enter a parse tree produced by the `Name`
+	 * labeled alternative in `BabyJuliaParser.expr`.
 	 * @param ctx the parse tree
 	 */
-	enterProg?: (ctx: ProgContext) => void;
+	enterName?: (ctx: NameContext) => void;
 	/**
-	 * Exit a parse tree produced by `BabyJuliaParser.prog`.
+	 * Exit a parse tree produced by the `Name`
+	 * labeled alternative in `BabyJuliaParser.expr`.
 	 * @param ctx the parse tree
 	 */
-	exitProg?: (ctx: ProgContext) => void;
+	exitName?: (ctx: NameContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `BabyJuliaParser.exprSequence`.
+	 * @param ctx the parse tree
+	 */
+	enterExprSequence?: (ctx: ExprSequenceContext) => void;
+	/**
+	 * Exit a parse tree produced by `BabyJuliaParser.exprSequence`.
+	 * @param ctx the parse tree
+	 */
+	exitExprSequence?: (ctx: ExprSequenceContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `BabyJuliaParser.expr`.

@@ -1,10 +1,11 @@
 grammar BabyJulia;
 
 // Parser rules 
-prog: (expr (NEWLINE)* | NEWLINE)* EOF;
+exprSequence: (expr (NEWLINE)* | NEWLINE)* EOF;
 expr:
 	name = NAME ASSIGN value = atom	# VarDeclaration
-	| value = atom					# Literal;
+	| value = atom					# Literal
+	| name = NAME					# Name;
 
 atom: NUMBER | STRING | BOOL;
 // Lexer rules literal
@@ -24,3 +25,4 @@ NAME: [a-zA-Z_]+;
 WHITESPACE: [ \r\t]+ -> skip;
 NEWLINE: ('\r'? '\n' | '\r')+;
 ASSIGN: '=';
+

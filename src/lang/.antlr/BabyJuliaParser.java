@@ -19,10 +19,10 @@ public class BabyJuliaParser extends Parser {
 		NUMBER=1, STRING=2, BOOL=3, BIN_OP=4, MUL=5, DIV=6, ADD=7, SUB=8, NAME=9, 
 		WHITESPACE=10, NEWLINE=11, ASSIGN=12;
 	public static final int
-		RULE_prog = 0, RULE_expr = 1, RULE_atom = 2;
+		RULE_exprSequence = 0, RULE_expr = 1, RULE_atom = 2;
 	private static String[] makeRuleNames() {
 		return new String[] {
-			"prog", "expr", "atom"
+			"exprSequence", "expr", "atom"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -91,7 +91,7 @@ public class BabyJuliaParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 
-	public static class ProgContext extends ParserRuleContext {
+	public static class ExprSequenceContext extends ParserRuleContext {
 		public TerminalNode EOF() { return getToken(BabyJuliaParser.EOF, 0); }
 		public List<ExprContext> expr() {
 			return getRuleContexts(ExprContext.class);
@@ -103,15 +103,15 @@ public class BabyJuliaParser extends Parser {
 		public TerminalNode NEWLINE(int i) {
 			return getToken(BabyJuliaParser.NEWLINE, i);
 		}
-		public ProgContext(ParserRuleContext parent, int invokingState) {
+		public ExprSequenceContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_prog; }
+		@Override public int getRuleIndex() { return RULE_exprSequence; }
 	}
 
-	public final ProgContext prog() throws RecognitionException {
-		ProgContext _localctx = new ProgContext(_ctx, getState());
-		enterRule(_localctx, 0, RULE_prog);
+	public final ExprSequenceContext exprSequence() throws RecognitionException {
+		ExprSequenceContext _localctx = new ExprSequenceContext(_ctx, getState());
+		enterRule(_localctx, 0, RULE_exprSequence);
 		int _la;
 		try {
 			int _alt;
@@ -207,15 +207,20 @@ public class BabyJuliaParser extends Parser {
 		}
 		public LiteralContext(ExprContext ctx) { copyFrom(ctx); }
 	}
+	public static class NameContext extends ExprContext {
+		public Token name;
+		public TerminalNode NAME() { return getToken(BabyJuliaParser.NAME, 0); }
+		public NameContext(ExprContext ctx) { copyFrom(ctx); }
+	}
 
 	public final ExprContext expr() throws RecognitionException {
 		ExprContext _localctx = new ExprContext(_ctx, getState());
 		enterRule(_localctx, 2, RULE_expr);
 		try {
-			setState(25);
+			setState(26);
 			_errHandler.sync(this);
-			switch (_input.LA(1)) {
-			case NAME:
+			switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
+			case 1:
 				_localctx = new VarDeclarationContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
@@ -227,9 +232,7 @@ public class BabyJuliaParser extends Parser {
 				((VarDeclarationContext)_localctx).value = atom();
 				}
 				break;
-			case NUMBER:
-			case STRING:
-			case BOOL:
+			case 2:
 				_localctx = new LiteralContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
@@ -237,8 +240,14 @@ public class BabyJuliaParser extends Parser {
 				((LiteralContext)_localctx).value = atom();
 				}
 				break;
-			default:
-				throw new NoViableAltException(this);
+			case 3:
+				_localctx = new NameContext(_localctx);
+				enterOuterAlt(_localctx, 3);
+				{
+				setState(25);
+				((NameContext)_localctx).name = match(NAME);
+				}
+				break;
 			}
 		}
 		catch (RecognitionException re) {
@@ -269,7 +278,7 @@ public class BabyJuliaParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(27);
+			setState(28);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NUMBER) | (1L << STRING) | (1L << BOOL))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -293,16 +302,16 @@ public class BabyJuliaParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\16 \4\2\t\2\4\3\t"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\16!\4\2\t\2\4\3\t"+
 		"\3\4\4\t\4\3\2\3\2\7\2\13\n\2\f\2\16\2\16\13\2\3\2\7\2\21\n\2\f\2\16\2"+
-		"\24\13\2\3\2\3\2\3\3\3\3\3\3\3\3\5\3\34\n\3\3\4\3\4\3\4\2\2\5\2\4\6\2"+
-		"\3\3\2\3\5\2 \2\22\3\2\2\2\4\33\3\2\2\2\6\35\3\2\2\2\b\f\5\4\3\2\t\13"+
-		"\7\r\2\2\n\t\3\2\2\2\13\16\3\2\2\2\f\n\3\2\2\2\f\r\3\2\2\2\r\21\3\2\2"+
-		"\2\16\f\3\2\2\2\17\21\7\r\2\2\20\b\3\2\2\2\20\17\3\2\2\2\21\24\3\2\2\2"+
-		"\22\20\3\2\2\2\22\23\3\2\2\2\23\25\3\2\2\2\24\22\3\2\2\2\25\26\7\2\2\3"+
-		"\26\3\3\2\2\2\27\30\7\13\2\2\30\31\7\16\2\2\31\34\5\6\4\2\32\34\5\6\4"+
-		"\2\33\27\3\2\2\2\33\32\3\2\2\2\34\5\3\2\2\2\35\36\t\2\2\2\36\7\3\2\2\2"+
-		"\6\f\20\22\33";
+		"\24\13\2\3\2\3\2\3\3\3\3\3\3\3\3\3\3\5\3\35\n\3\3\4\3\4\3\4\2\2\5\2\4"+
+		"\6\2\3\3\2\3\5\2\"\2\22\3\2\2\2\4\34\3\2\2\2\6\36\3\2\2\2\b\f\5\4\3\2"+
+		"\t\13\7\r\2\2\n\t\3\2\2\2\13\16\3\2\2\2\f\n\3\2\2\2\f\r\3\2\2\2\r\21\3"+
+		"\2\2\2\16\f\3\2\2\2\17\21\7\r\2\2\20\b\3\2\2\2\20\17\3\2\2\2\21\24\3\2"+
+		"\2\2\22\20\3\2\2\2\22\23\3\2\2\2\23\25\3\2\2\2\24\22\3\2\2\2\25\26\7\2"+
+		"\2\3\26\3\3\2\2\2\27\30\7\13\2\2\30\31\7\16\2\2\31\35\5\6\4\2\32\35\5"+
+		"\6\4\2\33\35\7\13\2\2\34\27\3\2\2\2\34\32\3\2\2\2\34\33\3\2\2\2\35\5\3"+
+		"\2\2\2\36\37\t\2\2\2\37\7\3\2\2\2\6\f\20\22\34";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

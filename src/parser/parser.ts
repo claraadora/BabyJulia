@@ -1,3 +1,5 @@
+import { ExprSequenceContext, NameContext } from "./../lang/BabyJuliaParser";
+import { ExpressionSequence, Name } from "../types/types";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
 import { ErrorNode } from "antlr4ts/tree/ErrorNode";
@@ -7,66 +9,74 @@ import { TerminalNode } from "antlr4ts/tree/TerminalNode";
 import { BabyJuliaVisitor } from "../lang/BabyJuliaVisitor";
 import {
   BabyJuliaParser,
-  ProgContext,
   VarDeclarationContext,
   LiteralContext,
   AtomContext,
+  ExprContext,
 } from "../lang/BabyJuliaParser";
 import { BabyJuliaLexer } from "../lang/BabyJuliaLexer";
-import { VarDeclaration, Literal, BJNode } from "../types";
-
-class BJNodeGenerator implements BabyJuliaVisitor<BJNode> {
-  visitVarDeclaration(ctx: VarDeclarationContext): VarDeclaration {
+import { VariableDeclaration, Literal, Node } from "../types/types";
+class NodeGenerator implements BabyJuliaVisitor<Node> {
+  visitVarDeclaration(ctx: VarDeclarationContext): VariableDeclaration {
+    // console.log("var declaration");
     return {
-      type: "VarDeclaration",
-      name: ctx._name.text,
-      value: ctx._value.text,
+      type: "VariableDeclaration",
+      name: ctx._name.text!,
+      value: ctx._value.text!,
     };
   }
 
-  visitLiteral(ctx: LiteralContext): BJNode {
+  visitLiteral(ctx: LiteralContext): Node {
+    // console.log("literal");
     return this.visit(ctx.atom());
   }
 
+  visitName(ctx: NameContext): Name {
+    return {
+      type: "Name",
+      name: ctx._name.text!,
+    };
+  }
+
   visitAtom(ctx: AtomContext): Literal {
+    // console.log("atom");
     return {
       type: "Literal",
       value: ctx.text,
     };
   }
 
-  visitProg(ctx: ProgContext): BJNode {
-    const expressions: BJNode[] = [];
+  visitExprSequence(ctx: ExprContext): ExpressionSequence {
+    // console.log("sequence");
+    const expressions: Node[] = [];
     for (let i = 0; i < ctx.childCount; i++) {
       expressions.push(ctx.getChild(i).accept(this));
     }
     return {
-      type: "ExprList",
+      type: "ExpressionSequence",
       expressions,
     };
   }
 
-  visit(tree: ParseTree): BJNode {
+  visit(tree: ParseTree): Node {
     return tree.accept(this);
   }
 
-  visitChildren(node: RuleNode): BJNode {
+  visitChildren(node: RuleNode): Node {
     console.log("children");
-    return null;
   }
 
-  visitTerminal(node: TerminalNode): BJNode {
+  visitTerminal(node: TerminalNode): Node {
     console.log("terminal");
-    return null;
   }
 
-  visitErrorNode(node: ErrorNode): BJNode {
+  visitErrorNode(node: ErrorNode): Node {
     throw new Error("Invalid syntax!");
   }
 }
 
-function convertSource(prog: ProgContext): BJNode {
-  const generator = new BJNodeGenerator();
+function convertSource(prog: ExprSequenceContext): Node {
+  const generator = new NodeGenerator();
   return prog.accept(generator);
 }
 
@@ -77,7 +87,7 @@ export function parse(source: string) {
   const parser = new BabyJuliaParser(tokenStream);
   parser.buildParseTree = true;
 
-  const tree = parser.prog();
+  const tree = parser.exprSequence();
   const converted = convertSource(tree);
   return converted;
 }
