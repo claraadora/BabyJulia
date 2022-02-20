@@ -7,6 +7,11 @@ expr:
 	| value = atom					# Literal
 	| name = NAME					# Name;
 
+funcDefinition:
+	'function' name = NAME params = parameters NEWLINE bod = body 'end';
+parameters: '(' (param = NAME)? ')';
+body: exprSequence 'return' expr;
+
 atom: NUMBER | STRING | BOOL;
 // Lexer rules literal
 NUMBER: [0-9]+;

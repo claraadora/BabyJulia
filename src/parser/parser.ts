@@ -1,4 +1,9 @@
-import { ExprSequenceContext, NameContext } from "./../lang/BabyJuliaParser";
+import {
+  ExprSequenceContext,
+  FuncDefinitionContext,
+  NameContext,
+  ParametersContext,
+} from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
 import { ErrorNode } from "antlr4ts/tree/ErrorNode";
@@ -20,6 +25,7 @@ import {
   Literal,
   Node,
   Name,
+  FunctionDefinition,
 } from "./../types/types";
 class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitVarDeclaration(ctx: VarDeclarationContext): VariableDeclaration {
@@ -48,6 +54,21 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "Literal",
       value: ctx.text,
+    };
+  }
+
+  visitParameters(ctx: ParametersContext) {
+    return {
+      type: "Parameters",
+    };
+  }
+
+  visitFuncDefinition(ctx: FuncDefinitionContext): FunctionDefinition {
+    return {
+      type: "FunctionDefinition",
+      name: ctx._name.text!,
+      params: this.visit(ctx.parameters()),
+      body: this.visit(ctx.body()),
     };
   }
 

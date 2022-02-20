@@ -6,10 +6,19 @@ export type Node =
   | Name
   | void;
 
+export type AType = "Int64" | "Bool";
 export interface VariableDeclaration {
   type: "VariableDeclaration";
   name: string;
   value: string;
+  atype?: string;
+}
+
+export interface FunctionDefinition {
+  type: "FunctionDefinition";
+  name: string;
+  params: string[];
+  body: ExpressionSequence;
 }
 
 export interface Literal {
