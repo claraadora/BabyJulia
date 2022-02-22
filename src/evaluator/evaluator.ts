@@ -4,6 +4,7 @@ import {
   Literal,
   Node,
   ExpressionSequence,
+  Struct,
 } from "./../types/types";
 import * as _ from "lodash";
 
@@ -20,6 +21,8 @@ export const evaluate = (node: Node): Primitive | void => {
       return evaluate_variable_declaration(node);
     case "Name":
       return evaluate_name(node);
+    case "Struct":
+      return evaluate_struct(node);
     default:
   }
 };
@@ -39,4 +42,8 @@ const evaluate_name = (node: Name): Primitive => {
 const evaluate_variable_declaration = (node: VariableDeclaration) => {
   global_env[node.name] = node.value;
   return undefined;
+};
+
+const evaluate_struct = (node: Struct) => {
+  return node.fields.toString();
 };

@@ -12,6 +12,7 @@ import {
   LiteralContext,
   AtomContext,
   ExprContext,
+  StructContext,
 } from "../lang/BabyJuliaParser";
 import { BabyJuliaLexer } from "../lang/BabyJuliaLexer";
 import {
@@ -20,6 +21,8 @@ import {
   Literal,
   Node,
   Name,
+  Struct,
+  StructField,
 } from "./../types/types";
 class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitVarDeclaration(ctx: VarDeclarationContext): VariableDeclaration {
@@ -60,6 +63,19 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "ExpressionSequence",
       expressions,
+    };
+  }
+
+  visitStruct(ctx: StructContext): Struct {
+    // console.log("struct declaration");
+    const fields: StructField[] = [];
+    for (let i = 0; i < ctx.childCount; i++) {
+      fields.push(ctx.getChild(i).accept(this));
+    }
+    return {
+      type: "Struct",
+      name: ctx._extTypedIdent._typedIdent.text!,
+      fields: fields,
     };
   }
 
