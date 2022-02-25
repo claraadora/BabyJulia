@@ -16,7 +16,7 @@ body: exprSequence 'return' expr;
 
 structAssignment:
 	varName = (NAME | IDENTIFIER) ASSIGN structName = (NAME | IDENTIFIER) params = structParams;
-structParams: '(' (param = atom)? ')';
+structParams: '(' (param = atom (',')? )* ')';
 
 structDefinition:
 	('mutable')? 'struct' name = parametrizedIdentifier NEWLINE 
