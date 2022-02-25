@@ -5,5 +5,3 @@ struct Person
 end
 
 person = Person("something","bebeb",10)
-a = person.myname
-a

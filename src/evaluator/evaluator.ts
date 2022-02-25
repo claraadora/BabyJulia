@@ -7,6 +7,7 @@ import {
   Struct,
 } from "./../types/types";
 import * as _ from "lodash";
+import { arrayBuffer } from "stream/consumers";
 
 const global_env = {};
 type Primitive = number | boolean | string;
@@ -45,5 +46,21 @@ const evaluate_variable_declaration = (node: VariableDeclaration) => {
 };
 
 const evaluate_struct = (node: Struct) => {
-  return node.fields.toString();
+  for (let i = 0; i < node.fields.length; i++) { 
+    // global_env is a placeholder
+    set_type(node.name, node.fields[i].name, node.fields[i].atype, global_env);
+  }
+  // console.log("*** EVAL struct:", global_env[node.name]);
+  return undefined;
 };
+
+
+// set_type is used for type declarations to
+// set the type of a given symbol in the first 
+// (innermost) frame of the given environment
+
+const set_type = (structName: string, symbol: String, atype: String = "", env: {}) => {
+   env[structName] = [symbol, atype];
+}
+
+

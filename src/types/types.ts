@@ -5,6 +5,8 @@ export type Node =
   | ExpressionSequence
   | Name
   | Struct
+  | StructAssg
+  | StructParams
   | void;
 
 export interface VariableDeclaration {
@@ -44,6 +46,17 @@ export interface StructField {
   atype?: string;
 }
 
+export interface StructAssg {
+  type: "StructAssg";
+  varName: string;
+  structName: string;
+  params: string[];
+}
+
+export interface StructParams {
+  type: "StructParams";
+}
+
 // Type guards
 function isVariableDeclaration(node: Node): node is VariableDeclaration {
   return (node as VariableDeclaration).type === "VariableDeclaration";
@@ -65,4 +78,8 @@ function isStruct(node: Node): node is Struct {
   return (node as Struct).type === "Struct";
 }
 
-export { isVariableDeclaration, isLiteral, isProgram, isExpressionList, isStruct };
+function isStructAssg(node: Node): node is StructAssg {
+  return (node as StructAssg).type === "StructAssg";
+}
+
+export { isVariableDeclaration, isLiteral, isProgram, isExpressionList, isStruct, isStructAssg };

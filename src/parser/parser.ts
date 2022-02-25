@@ -13,6 +13,8 @@ import {
   AtomContext,
   ExprContext,
   StructContext,
+  StructAssgContext,
+  StructParamsContext,
 } from "../lang/BabyJuliaParser";
 import { BabyJuliaLexer } from "../lang/BabyJuliaLexer";
 import {
@@ -23,6 +25,8 @@ import {
   Name,
   Struct,
   StructField,
+  StructAssg,
+  StructParams,
 } from "./../types/types";
 class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitVarDeclaration(ctx: VarDeclarationContext): VariableDeclaration {
@@ -67,15 +71,41 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 
   visitStruct(ctx: StructContext): Struct {
-    // console.log("struct declaration");
+    console.log("struct declaration");
     const fields: StructField[] = [];
     for (let i = 0; i < ctx.childCount; i++) {
-      fields.push(ctx.getChild(i).accept(this));
+      const structField: StructField = {
+        name: ctx._struct._extTypedIdent._typedIdent._ident1.text!,
+        atype: ctx._struct._extTypedIdent._typedIdent._ident2?.text
+      };
+
+      console.log(i, " name:", structField.name);
+      console.log(i, " atype:", structField.atype);
+      fields.push(structField);
     }
     return {
       type: "Struct",
-      name: ctx._extTypedIdent._typedIdent.text!,
+      name: ctx._struct._name.text!,
       fields: fields,
+    };
+  }
+
+  visitStructParams(ctx: StructParamsContext): StructParams {
+    const param = ctx._param;
+    // console.log("^^^^ PARAM: ", param);
+    return {
+      type: "StructParams",
+    };
+  }
+
+  visitStructAssg(ctx: StructAssgContext): StructAssg {
+    // console.log("var declaration");
+    return {
+      type: "StructAssg",
+      varName: ctx._structAssg._varName.text!,
+      structName: ctx._structAssg._structName.text!,
+      params: ["hi"] // placeholder
+      // params: this.visit(ctx._structAssg.structParams()),
     };
   }
 

@@ -1,37 +1,42 @@
 grammar BabyJulia;
 
-// Parser rules 
+// Parser rules
 exprSequence: (expr (NEWLINE)* | NEWLINE)* EOF;
 expr:
 	name = NAME ASSIGN value = atom	# VarDeclaration
 	| value = atom					# Literal
 	| name = NAME					# Name
-	| struct = structDefinition		# Struct;
+	| struct = structDefinition		# Struct
+	| structAssg = structAssignment # StructAssg;
 
 funcDefinition:
 	'function' name = NAME params = parameters NEWLINE bod = body 'end';
 parameters: '(' (param = NAME)? ')';
 body: exprSequence 'return' expr;
 
+structAssignment:
+	varName = (NAME | IDENTIFIER) ASSIGN structName = (NAME | IDENTIFIER) params = structParams;
+structParams: '(' (param = atom)? ')';
+
 structDefinition:
-	'struct' extTypedIdent = extendedTypedIdentifier 'end'
-	| 'mutable' 'struct' extTypedIdent = extendedTypedIdentifier 'end';
+	('mutable')? 'struct' name = parametrizedIdentifier NEWLINE 
+	extTypedIdent = extendedTypedIdentifier
+	'end';
 
 extendedTypedIdentifier:
-	typedIdent = typedIdentifier
-	| typedIdent = typedIdentifier TERMINATOR extendedTypedIdentifier;
+	(typedIdent = typedIdentifier NEWLINE)*;
 
 typedIdentifier:
-	paramIdent = parametrizedIdentifier
-	| paramIdent1 =  parametrizedIdentifier PARAMETRIZED_CHOICE paramIdent2 = parametrizedIdentifier;
+	ident1 = parametrizedIdentifier
+	| (ident1 = parametrizedIdentifier PARAMETRIZED_CHOICE ident2 = parametrizedIdentifier);
 
 parametrizedIdentifier:
-	name = NAME 
-	| name = NAME '{' modifTypedIdent = modifiedTypedIdentifier '}';
+	(NAME | IDENTIFIER)
+	| (NAME | IDENTIFIER) '{' modifTypedIdent = modifiedTypedIdentifier '}';
 
 modifiedTypedIdentifier:
 	typedIdent = typedIdentifier
-	| typedIdent = typedIdentifier ',' modifiedTypedIdentifier;
+	| (typedIdent = typedIdentifier ',' modifiedTypedIdentifier);
 
 PARAMETRIZED_CHOICE: '::' | '<:';
 
@@ -50,6 +55,7 @@ SUB: '-';
 
 // others
 NAME: [a-zA-Z_]+;
+IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 WHITESPACE: [ \r\t]+ -> skip;
 NEWLINE: ('\r'? '\n' | '\r')+;
 ASSIGN: '=';
