@@ -25,5 +25,3 @@ animal.roar
 
 abstract type Cat end 
 abstract type Cat <: Mammal end
-
-// return type 
