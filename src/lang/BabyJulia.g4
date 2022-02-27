@@ -13,11 +13,8 @@ expr:
 	| atom			# Literal
 	| identifier	# Name;
 
-simpleExpr: fldAccess | atom | identifier;
-
 // 1. Variable Definition
-varDef:
-	name = NAME (INSTANCE_OF type = NAME)? ASSIGN simpleExpr;
+varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
 
 // 2. Function Definition
 funcDef:
@@ -27,11 +24,11 @@ funcDef:
 parameters: parameter (',' parameter)*;
 parameter: name = NAME (INSTANCE_OF type = NAME)?;
 body: exprSequence;
-returnStmt: 'return' simpleExpr?;
+returnStmt: 'return' expr?;
 
 // 3. Function Application
 arguments: argument (',' argument)*;
-argument: simpleExpr;
+argument: expr;
 funcApp: fname = NAME '(' arguments? ')';
 
 // 4. Struct Definition

@@ -1,0 +1,154 @@
+{
+    "type": "ExpressionSequence",
+    "expressions": [
+        {
+            "type": "VariableDefinition",
+            "name": "x",
+            "expr": {
+                "type": "Literal",
+                "value": "3"
+            },
+            "atype": null
+        },
+        null,
+        {
+            "type": "VariableDefinition",
+            "name": "x",
+            "expr": {
+                "type": "Literal",
+                "value": "100"
+            },
+            "atype": "Int64"
+        },
+        null,
+        {
+            "type": "FunctionDefinition",
+            "name": "myplus",
+            "params": [
+                {
+                    "type": "Parameter",
+                    "name": "x",
+                    "atype": null
+                },
+                null,
+                {
+                    "type": "Parameter",
+                    "name": "y",
+                    "atype": null
+                }
+            ],
+            "body": {
+                "type": "ExpressionSequence",
+                "expressions": [
+                    {
+                        "type": "VariableDefinition",
+                        "name": "x",
+                        "expr": {
+                            "type": "Literal",
+                            "value": "5"
+                        },
+                        "atype": null
+                    },
+                    null,
+                    {
+                        "type": "VariableDefinition",
+                        "name": "y",
+                        "expr": {
+                            "type": "Literal",
+                            "value": "10"
+                        },
+                        "atype": null
+                    },
+                    null
+                ]
+            },
+            "return_stmt": {
+                "type": "Name",
+                "name": "x"
+            }
+        },
+        null,
+        {
+            "type": "FunctionDefinition",
+            "name": "myplus",
+            "params": [
+                {
+                    "type": "Parameter",
+                    "name": "x",
+                    "atype": "Int64"
+                }
+            ],
+            "body": {
+                "type": "ExpressionSequence",
+                "expressions": [
+                    {
+                        "type": "VariableDefinition",
+                        "name": "x",
+                        "expr": {
+                            "type": "Literal",
+                            "value": "3"
+                        },
+                        "atype": null
+                    },
+                    null
+                ]
+            },
+            "return_stmt": {
+                "type": "Name",
+                "name": "x"
+            }
+        },
+        null,
+        {
+            "type": "FunctionDefinition",
+            "name": "myplus",
+            "params": [
+                {
+                    "type": "Parameter",
+                    "name": "x",
+                    "atype": "Int64"
+                },
+                null,
+                {
+                    "type": "Parameter",
+                    "name": "y",
+                    "atype": "String"
+                }
+            ],
+            "body": {
+                "type": "ExpressionSequence",
+                "expressions": [
+                    {
+                        "type": "VariableDefinition",
+                        "name": "x",
+                        "expr": {
+                            "type": "Literal",
+                            "value": "3"
+                        },
+                        "atype": null
+                    },
+                    null,
+                    {
+                        "type": "VariableDefinition",
+                        "name": "y",
+                        "expr": {
+                            "type": "Literal",
+                            "value": "\"Hello!\""
+                        },
+                        "atype": null
+                    },
+                    null
+                ]
+            },
+            "return_stmt": {
+                "type": "Name",
+                "name": "y"
+            }
+        },
+        {
+            "type": "Literal",
+            "value": "10"
+        },
+        null
+    ]
+}

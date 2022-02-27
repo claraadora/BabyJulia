@@ -19,8 +19,6 @@ export type Expression =
   | Literal
   | Name;
 
-export type SimpleExpression = FieldAccess | Literal | Name;
-
 export interface Literal {
   type: "Literal";
   value: string;
@@ -41,7 +39,7 @@ export interface FieldAccess {
 export interface VariableDefinition {
   type: "VariableDefinition";
   name: string;
-  expr: Node; // Simple expression.
+  expr: Expression;
   atype: string | null;
 }
 
@@ -51,7 +49,8 @@ export interface FunctionDefinition {
   name: string;
   params: Parameter[];
   body: ExpressionSequence | null;
-  return_stmt: SimpleExpression | null;
+  return_stmt: Expression | null;
+  return_type?: string;
 }
 
 export interface Parameter {
@@ -64,7 +63,7 @@ export interface Parameter {
 export interface FunctionApplication {
   type: "FunctionApplication";
   name: string;
-  args: SimpleExpression[];
+  args: Expression[];
 }
 
 // Struct

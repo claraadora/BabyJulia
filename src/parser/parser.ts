@@ -1,6 +1,5 @@
 import {
   FieldAccessContext,
-  SimpleExprContext,
   IdentifierContext,
   FuncApplicationContext,
   ParameterContext,
@@ -39,7 +38,6 @@ import {
   FunctionDefinition,
   FieldAccess,
   Parameter,
-  SimpleExpression,
   Expression,
   FunctionApplication,
   AbstractTypeDeclaration,
@@ -59,8 +57,8 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     };
   }
 
-  visitSimpleExpr(ctx: SimpleExprContext): SimpleExpression {
-    return ctx.getChild(0).accept(this) as SimpleExpression;
+  visitExpr(ctx: ExprContext): Expression {
+    return ctx.getChild(0).accept(this) as Expression;
   }
 
   visitLiteral(temp_ctx: LiteralContext): Literal {
@@ -91,10 +89,11 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   // Variable Definition
   visitVarDefinition(temp_ctx: VarDefinitionContext): VariableDefinition {
     const ctx = temp_ctx.varDef();
+    // accept(this)
     return {
       type: "VariableDefinition",
       name: ctx._name.text!,
-      expr: this.visit(ctx.simpleExpr()),
+      expr: ctx.expr().accept(this) as Expression,
       atype: ctx._type ? ctx._type.text! : null,
     };
   }
@@ -119,10 +118,10 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     // Get return statement.
     const return_stmt_ctx = ctx.returnStmt();
     const return_stmt_expr_ctx = return_stmt_ctx
-      ? return_stmt_ctx.simpleExpr()
+      ? return_stmt_ctx.expr()
       : null;
     const return_stmt = return_stmt_expr_ctx
-      ? this.visitSimpleExpr(return_stmt_expr_ctx)
+      ? (return_stmt_expr_ctx.accept(this) as Expression)
       : null;
 
     return {
@@ -131,6 +130,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       params,
       body,
       return_stmt,
+      return_type: ctx._returnType?.text,
     };
   }
 
@@ -145,11 +145,11 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   // Function Application
   visitFuncApplication(temp_ctx: FuncApplicationContext): FunctionApplication {
     const ctx = temp_ctx.funcApp();
-    const args: SimpleExpression[] = [];
+    const args: Expression[] = [];
     const args_ctx = ctx.arguments();
 
     for (let i = 0; i < (args_ctx ? args_ctx.childCount : 0); i++) {
-      args.push(args_ctx?.getChild(i).accept(this) as SimpleExpression);
+      args.push(args_ctx?.getChild(i).accept(this) as Expression);
     }
 
     return {
@@ -159,8 +159,8 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     };
   }
 
-  visitArgument(ctx: ArgumentContext): SimpleExpression {
-    return this.visitSimpleExpr(ctx.simpleExpr());
+  visitArgument(ctx: ArgumentContext): Expression {
+    return ctx.expr().accept(this) as Expression;
   }
 
   // Abstract Type Declaration
@@ -171,7 +171,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "AbstractTypeDeclaration",
       name: ctx._type.text!,
-      super_type_name: ctx._supertype.text!,
+      super_type_name: ctx._supertype?.text,
     };
   }
 
