@@ -36,4 +36,4 @@ end
 struct Lion <: Cat 
     maneColor 
     roar::String 	
-end 
+end
