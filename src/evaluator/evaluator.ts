@@ -1,6 +1,6 @@
 import {
   Name,
-  VariableDeclaration,
+  VariableDefinition,
   Literal,
   Node,
   ExpressionSequence,
@@ -16,7 +16,7 @@ export const evaluate = (node: Node): Primitive | void => {
       return evaluate_sequence(node);
     case "Literal":
       return evaluate_literal(node);
-    case "VariableDeclaration":
+    case "VariableDefinition":
       return evaluate_variable_declaration(node);
     case "Name":
       return evaluate_name(node);
@@ -36,7 +36,7 @@ const evaluate_literal = (node: Literal): Primitive => {
 const evaluate_name = (node: Name): Primitive => {
   return global_env[node.name];
 };
-const evaluate_variable_declaration = (node: VariableDeclaration) => {
-  global_env[node.name] = node.value;
+const evaluate_variable_declaration = (node: VariableDefinition) => {
+  global_env[node.name] = node.expr;
   return undefined;
 };

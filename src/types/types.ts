@@ -1,25 +1,25 @@
-export type Node =
-  | VariableDeclaration
+export type Node = Program | ExpressionSequence | Expression | Parameter | void;
+
+// Commons
+export interface Program {
+  type: "Program";
+  expressions: ExpressionSequence;
+}
+export interface ExpressionSequence {
+  type: "ExpressionSequence";
+  expressions: Array<Expression>;
+}
+
+export type Expression =
+  | VariableDefinition
+  | FunctionDefinition
+  | FunctionApplication
+  | FieldAccess
+  | AbstractTypeDeclaration
   | Literal
-  | Program
-  | ExpressionSequence
-  | Name
-  | void;
+  | Name;
 
-export type AType = "Int64" | "Bool";
-export interface VariableDeclaration {
-  type: "VariableDeclaration";
-  name: string;
-  value: string;
-  atype?: string;
-}
-
-export interface FunctionDefinition {
-  type: "FunctionDefinition";
-  name: string;
-  params: string[];
-  body: ExpressionSequence;
-}
+export type SimpleExpression = FieldAccess | Literal | Name;
 
 export interface Literal {
   type: "Literal";
@@ -31,31 +31,47 @@ export interface Name {
   name: string;
 }
 
-export interface Program {
-  type: "Program";
-  expressions: ExpressionSequence;
+export interface FieldAccess {
+  type: "FieldAccess";
+  objName: string;
+  fieldName: string;
 }
 
-export interface ExpressionSequence {
-  type: "ExpressionSequence";
-  expressions: Array<Node>;
+// Variable Definition
+export interface VariableDefinition {
+  type: "VariableDefinition";
+  name: string;
+  expr: Node; // Simple expression.
+  atype: string | null;
 }
 
-// Type guards
-function isVariableDeclaration(node: Node): node is VariableDeclaration {
-  return (node as VariableDeclaration).type === "VariableDeclaration";
+// Function Definition
+export interface FunctionDefinition {
+  type: "FunctionDefinition";
+  name: string;
+  params: Parameter[];
+  body: ExpressionSequence | null;
+  return_stmt: SimpleExpression | null;
 }
 
-function isLiteral(node: Node): node is Literal {
-  return (node as Literal).type === "Literal";
+export interface Parameter {
+  type: "Parameter";
+  name: string;
+  atype: string | null;
 }
 
-function isProgram(node: Node): node is Program {
-  return (node as Program).type === "Program";
+// Function Application
+export interface FunctionApplication {
+  type: "FunctionApplication";
+  name: string;
+  args: SimpleExpression[];
 }
 
-function isExpressionList(node: Node): node is ExpressionSequence {
-  return (node as ExpressionSequence).type === "ExpressionSequence";
-}
+// Struct
 
-export { isVariableDeclaration, isLiteral, isProgram, isExpressionList };
+// Abstract Type
+export interface AbstractTypeDeclaration {
+  type: "AbstractTypeDeclaration";
+  name: string;
+  super_type_name?: string;
+}

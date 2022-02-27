@@ -4,32 +4,35 @@ grammar BabyJulia;
 program: exprSequence EOF;
 exprSequence: (expr (NEWLINE)* | NEWLINE)*;
 expr:
-	varDef			# VarDefinition
-	| funcDef		# FuncDefinition
-	| funcApp		# FuncApplication
-	| structDef		# StructDefinition
-	| fldAccess		# FieldAccess
-	| absTypeDeclr	# AbstractTypeDeclaration
-	| atom			# Literal
-	| identifier	# Name;
+	varDef
+	| funcDef
+	| funcApp
+	| structDef
+	| fldAccess
+	| absTypeDeclr
+	| atom
+	| identifier;
+
+simpleExpr: fldAccess | atom | identifier;
 
 // 1. Variable Definition
-varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
+varDef:
+	name = NAME (INSTANCE_OF type = NAME)? ASSIGN simpleExpr;
 
 // 2. Function Definition
 funcDef:
-	'function' NAME '(' parameters? ')' (
+	'function' funcName = NAME '(' parameters? ')' (
 		INSTANCE_OF returnType = NAME
-	)? NEWLINE body? returnStmt 'end';
+	)? NEWLINE body? returnStmt NEWLINE 'end';
 parameters: parameter (',' parameter)*;
 parameter: name = NAME (INSTANCE_OF type = NAME)?;
 body: exprSequence;
-returnStmt: 'return' fldAccess | atom | identifier;
+returnStmt: 'return' simpleExpr?;
 
 // 3. Function Application
 arguments: argument (',' argument)*;
-argument: fldAccess | atom | identifier;
-funcApp: NAME '(' arguments? ')';
+argument: simpleExpr;
+funcApp: fname = NAME '(' arguments? ')';
 
 // 4. Struct Definition
 structDef:
@@ -44,10 +47,10 @@ absTypeDeclr:
 // 6. Field Access
 fldAccess: objName = NAME '.' fieldName = NAME;
 
-// 7. Name
+// 7. Identifier
 identifier: NAME;
 
-// 8. Literal
+// 8. Atom 
 atom: NUMBER | STRING | BOOL;
 
 // Lexer rules
