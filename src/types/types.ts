@@ -1,4 +1,4 @@
-export type Node = Program | ExpressionSequence | Expression | Parameter | void;
+export type Node = Program | ExpressionSequence | Expression | Parameter | StructField | void;
 
 // Commons
 export interface Program {
@@ -15,6 +15,7 @@ export type Expression =
   | FunctionDefinition
   | FunctionApplication
   | FieldAccess
+  | StructDefinition
   | AbstractTypeDeclaration
   | Literal
   | Name;
@@ -67,6 +68,18 @@ export interface FunctionApplication {
 }
 
 // Struct
+export interface StructDefinition {
+  type: "StructDefinition";
+  struct_name: string;
+  super_type_name?: string;
+  fields: StructField[];
+}
+
+export interface StructField {
+  type: "StructField";
+  name: string;
+  atype: string | null;
+}
 
 // Abstract Type
 export interface AbstractTypeDeclaration {

@@ -19,7 +19,19 @@ function myplus(x::Int64, y::String)::String
 end 
 
 myplus(1,3)
+myplus("1", true, false)
 myplus(animal)
+
+struct Foo 
+    bar
+    baz::Int
+    qux::Bool
+end 
+
+struct Lion <: Cat 
+    maneColor 
+    roar::String 	
+end
 
 animal.roar 
 

@@ -13,6 +13,8 @@ import {
   NameContext,
   AbstractTypeDeclarationContext,
   LiteralContext,
+  StructDefinitionContext,
+  StructFieldContext
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -40,7 +42,9 @@ import {
   Parameter,
   Expression,
   FunctionApplication,
-  AbstractTypeDeclaration,
+  StructDefinition,
+  StructField,
+  AbstractTypeDeclaration
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -161,6 +165,33 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
   visitArgument(ctx: ArgumentContext): Expression {
     return ctx.expr().accept(this) as Expression;
+  }
+
+  // Struct Definition
+  visitStructDefinition(temp_ctx: StructDefinitionContext): StructDefinition {
+    const ctx = temp_ctx.structDef();
+
+    // Get struct fields.
+    const fields = [] as StructField[];
+    const fields_ctx = ctx.structFields();
+    for (let i = 0; i < (fields_ctx ? fields_ctx.childCount : 0); i++) {
+      fields.push(fields_ctx?.getChild(i).accept(this) as StructField);
+    }
+
+    return {
+      type: "StructDefinition",
+      struct_name: ctx._structName.text!,
+      super_type_name: ctx._supertype?.text,
+      fields
+    };
+  }
+
+  visitStructField(ctx: StructFieldContext): StructField {
+    return {
+      type: "StructField",
+      name: ctx._varName.text!,
+      atype: ctx._type ? ctx._type.text! : null,
+    };
   }
 
   // Abstract Type Declaration
