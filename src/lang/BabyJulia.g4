@@ -33,9 +33,11 @@ funcApp: fname = NAME '(' arguments? ')';
 
 // 4. Struct Definition
 structDef:
-	'struct' structName = NAME (SUBTYPE_OF supertype = NAME)? NEWLINE (
-		varName = NAME (INSTANCE_OF type = NAME)? NEWLINE
-	)* 'end';
+	'struct' structName = NAME (SUBTYPE_OF supertype = NAME)? NEWLINE structFields? 'end';
+
+structFields: (structField)*;
+
+structField: varName = NAME (INSTANCE_OF type = NAME)? NEWLINE;
 
 // 5. Abstract Type Declaration
 absTypeDeclr:
