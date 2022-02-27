@@ -19,6 +19,7 @@ function myplus(x::Int64, y::String)::String
 end 
 
 myplus(1,3)
+myplus("1", true, false)
 myplus(animal)
 
 animal.roar 
