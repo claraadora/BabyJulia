@@ -4,14 +4,14 @@ grammar BabyJulia;
 program: exprSequence EOF;
 exprSequence: (expr (NEWLINE)* | NEWLINE)*;
 expr:
-	varDef
-	| funcDef
-	| funcApp
-	| structDef
-	| fldAccess
-	| absTypeDeclr
-	| atom
-	| identifier;
+	varDef			# VarDefinition
+	| funcDef		# FuncDefinition
+	| funcApp		# FuncApplication
+	| structDef		# StructDefinition
+	| fldAccess		# FieldAccess
+	| absTypeDeclr	# AbstractTypeDeclaration
+	| atom			# Literal
+	| identifier	# Name;
 
 simpleExpr: fldAccess | atom | identifier;
 
@@ -66,7 +66,12 @@ ADD: '+';
 SUB: '-';
 
 // others
-NAME: [a-zA-Z_]+;
+NAME: ('a' ..'z' | 'A' ..'Z' | '_') (
+		'a' ..'z'
+		| 'A' ..'Z'
+		| '_'
+		| '0' ..'9'
+	)*;
 WHITESPACE: [ \r\t]+ -> skip;
 NEWLINE: ('\r'? '\n' | '\r')+;
 ASSIGN: '=';

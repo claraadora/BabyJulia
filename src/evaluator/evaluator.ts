@@ -33,9 +33,11 @@ const evaluate_sequence = (node: ExpressionSequence) => {
 const evaluate_literal = (node: Literal): Primitive => {
   return parseInt(node.value);
 };
+
 const evaluate_name = (node: Name): Primitive => {
   return global_env[node.name];
 };
+
 const evaluate_variable_declaration = (node: VariableDefinition) => {
   global_env[node.name] = node.expr;
   return undefined;

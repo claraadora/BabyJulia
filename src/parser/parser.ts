@@ -1,15 +1,19 @@
 import {
-  VarDefContext,
+  FieldAccessContext,
   SimpleExprContext,
   IdentifierContext,
-  FldAccessContext,
-  FuncDefContext,
+  FuncApplicationContext,
   ParameterContext,
   BodyContext,
   FuncAppContext,
   ArgumentContext,
   AbsTypeDeclrContext,
   ProgramContext,
+  FuncDefinitionContext,
+  VarDefinitionContext,
+  NameContext,
+  AbstractTypeDeclarationContext,
+  LiteralContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -59,21 +63,24 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return ctx.getChild(0).accept(this) as SimpleExpression;
   }
 
-  visitAtom(ctx: AtomContext): Literal {
+  visitLiteral(temp_ctx: LiteralContext): Literal {
+    const ctx = temp_ctx.atom();
     return {
       type: "Literal",
       value: ctx.text,
     };
   }
 
-  visitIdentfier(ctx: IdentifierContext): Name {
+  visitName(temp_ctx: NameContext): Name {
+    const ctx = temp_ctx.identifier();
     return {
       type: "Name",
       name: ctx.text,
     };
   }
 
-  visitFldAccess(ctx: FldAccessContext): FieldAccess {
+  visitFieldAccess(temp_ctx: FieldAccessContext): FieldAccess {
+    const ctx = temp_ctx.fldAccess();
     return {
       type: "FieldAccess",
       objName: ctx._objName.text!,
@@ -82,8 +89,8 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 
   // Variable Definition
-  visitVarDef(ctx: VarDefContext): VariableDefinition {
-    console.log("YO");
+  visitVarDefinition(temp_ctx: VarDefinitionContext): VariableDefinition {
+    const ctx = temp_ctx.varDef();
     return {
       type: "VariableDefinition",
       name: ctx._name.text!,
@@ -93,7 +100,9 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 
   // Function Definition
-  visitFuncDefinition(ctx: FuncDefContext): FunctionDefinition {
+  visitFuncDefinition(temp_ctx: FuncDefinitionContext): FunctionDefinition {
+    const ctx = temp_ctx.funcDef();
+
     // Get parameters.
     const params = [] as Parameter[];
     const parameters_ctx = ctx.parameters();
@@ -134,7 +143,8 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 
   // Function Application
-  visitFuncApp(ctx: FuncAppContext): FunctionApplication {
+  visitFuncApplication(temp_ctx: FuncApplicationContext): FunctionApplication {
+    const ctx = temp_ctx.funcApp();
     const args: SimpleExpression[] = [];
     const args_ctx = ctx.arguments();
 
@@ -154,7 +164,10 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 
   // Abstract Type Declaration
-  visitAbsTypeDeclr(ctx: AbsTypeDeclrContext): AbstractTypeDeclaration {
+  visitAbstractTypeDeclaration(
+    temp_ctx: AbstractTypeDeclarationContext
+  ): AbstractTypeDeclaration {
+    const ctx = temp_ctx.absTypeDeclr();
     return {
       type: "AbstractTypeDeclaration",
       name: ctx._type.text!,
