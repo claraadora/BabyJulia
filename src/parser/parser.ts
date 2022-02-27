@@ -1,8 +1,18 @@
 import {
-  ExprSequenceContext,
+  FieldAccessContext,
+  IdentifierContext,
+  FuncApplicationContext,
+  ParameterContext,
+  BodyContext,
+  FuncAppContext,
+  ArgumentContext,
+  AbsTypeDeclrContext,
+  ProgramContext,
   FuncDefinitionContext,
+  VarDefinitionContext,
   NameContext,
-  ParametersContext,
+  AbstractTypeDeclarationContext,
+  LiteralContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -13,77 +23,159 @@ import { TerminalNode } from "antlr4ts/tree/TerminalNode";
 import { BabyJuliaVisitor } from "../lang/BabyJuliaVisitor";
 import {
   BabyJuliaParser,
-  VarDeclarationContext,
-  LiteralContext,
   AtomContext,
   ExprContext,
+  ExprSequenceContext,
+  ParametersContext,
 } from "../lang/BabyJuliaParser";
 import { BabyJuliaLexer } from "../lang/BabyJuliaLexer";
 import {
   ExpressionSequence,
-  VariableDeclaration,
+  VariableDefinition,
   Literal,
   Node,
   Name,
   FunctionDefinition,
+  FieldAccess,
+  Parameter,
+  Expression,
+  FunctionApplication,
+  AbstractTypeDeclaration,
 } from "./../types/types";
+
 class NodeGenerator implements BabyJuliaVisitor<Node> {
-  visitVarDeclaration(ctx: VarDeclarationContext): VariableDeclaration {
-    // console.log("var declaration");
-    return {
-      type: "VariableDeclaration",
-      name: ctx._name.text!,
-      value: ctx._value.text!,
-    };
-  }
-
-  visitLiteral(ctx: LiteralContext): Node {
-    // console.log("literal");
-    return this.visit(ctx.atom());
-  }
-
-  visitName(ctx: NameContext): Name {
-    return {
-      type: "Name",
-      name: ctx._name.text!,
-    };
-  }
-
-  visitAtom(ctx: AtomContext): Literal {
-    // console.log("atom");
-    return {
-      type: "Literal",
-      value: ctx.text,
-    };
-  }
-
-  visitParameters(ctx: ParametersContext) {
-    return {
-      type: "Parameters",
-    };
-  }
-
-  visitFuncDefinition(ctx: FuncDefinitionContext): FunctionDefinition {
-    return {
-      type: "FunctionDefinition",
-      name: ctx._name.text!,
-      params: this.visit(ctx.parameters()),
-      body: this.visit(ctx.body()),
-    };
-  }
-
-  visitExprSequence(ctx: ExprContext): ExpressionSequence {
-    // console.log("sequence");
-    const expressions: Node[] = [];
+  // Expressions
+  visitExprSequence(ctx: ExprSequenceContext): ExpressionSequence {
+    const expressions: Expression[] = [];
     for (let i = 0; i < ctx.childCount; i++) {
-      expressions.push(ctx.getChild(i).accept(this));
+      expressions.push(ctx.getChild(i).accept(this) as Expression);
     }
+
     return {
       type: "ExpressionSequence",
       expressions,
     };
   }
 
+  visitExpr(ctx: ExprContext): Expression {
+    return ctx.getChild(0).accept(this) as Expression;
+  }
+
+  visitLiteral(temp_ctx: LiteralContext): Literal {
+    const ctx = temp_ctx.atom();
+    return {
+      type: "Literal",
+      value: ctx.text,
+    };
+  }
+
+  visitName(temp_ctx: NameContext): Name {
+    const ctx = temp_ctx.identifier();
+    return {
+      type: "Name",
+      name: ctx.text,
+    };
+  }
+
+  visitFieldAccess(temp_ctx: FieldAccessContext): FieldAccess {
+    const ctx = temp_ctx.fldAccess();
+    return {
+      type: "FieldAccess",
+      objName: ctx._objName.text!,
+      fieldName: ctx._fieldName.text!,
+    };
+  }
+
+  // Variable Definition
+  visitVarDefinition(temp_ctx: VarDefinitionContext): VariableDefinition {
+    const ctx = temp_ctx.varDef();
+    // accept(this)
+    return {
+      type: "VariableDefinition",
+      name: ctx._name.text!,
+      expr: ctx.expr().accept(this) as Expression,
+      atype: ctx._type ? ctx._type.text! : null,
+    };
+  }
+
+  // Function Definition
+  visitFuncDefinition(temp_ctx: FuncDefinitionContext): FunctionDefinition {
+    const ctx = temp_ctx.funcDef();
+
+    // Get parameters.
+    const params = [] as Parameter[];
+    const parameters_ctx = ctx.parameters();
+    for (let i = 0; i < (parameters_ctx ? parameters_ctx.childCount : 0); i++) {
+      params.push(parameters_ctx?.getChild(i).accept(this) as Parameter);
+    }
+
+    // Get body.
+    const body_ctx = ctx.body();
+    const body = body_ctx
+      ? this.visitExprSequence(body_ctx.exprSequence())
+      : null;
+
+    // Get return statement.
+    const return_stmt_ctx = ctx.returnStmt();
+    const return_stmt_expr_ctx = return_stmt_ctx
+      ? return_stmt_ctx.expr()
+      : null;
+    const return_stmt = return_stmt_expr_ctx
+      ? (return_stmt_expr_ctx.accept(this) as Expression)
+      : null;
+
+    return {
+      type: "FunctionDefinition",
+      name: ctx._funcName.text!,
+      params,
+      body,
+      return_stmt,
+      return_type: ctx._returnType?.text,
+    };
+  }
+
+  visitParameter(ctx: ParameterContext): Parameter {
+    return {
+      type: "Parameter",
+      name: ctx._name.text!,
+      atype: ctx._type ? ctx._type.text! : null,
+    };
+  }
+
+  // Function Application
+  visitFuncApplication(temp_ctx: FuncApplicationContext): FunctionApplication {
+    const ctx = temp_ctx.funcApp();
+    const args: Expression[] = [];
+    const args_ctx = ctx.arguments();
+
+    for (let i = 0; i < (args_ctx ? args_ctx.childCount : 0); i++) {
+      args.push(args_ctx?.getChild(i).accept(this) as Expression);
+    }
+
+    return {
+      type: "FunctionApplication",
+      name: ctx._fname.text!,
+      args,
+    };
+  }
+
+  visitArgument(ctx: ArgumentContext): Expression {
+    return ctx.expr().accept(this) as Expression;
+  }
+
+  // Abstract Type Declaration
+  visitAbstractTypeDeclaration(
+    temp_ctx: AbstractTypeDeclarationContext
+  ): AbstractTypeDeclaration {
+    const ctx = temp_ctx.absTypeDeclr();
+    return {
+      type: "AbstractTypeDeclaration",
+      name: ctx._type.text!,
+      super_type_name: ctx._supertype?.text,
+    };
+  }
+
+  // ANTLR things
   visit(tree: ParseTree): Node {
     return tree.accept(this);
   }
@@ -97,9 +189,10 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 }
 
-function convertSource(prog: ExprSequenceContext): Node {
+function convertSource(prog: ProgramContext): Node {
+  const expressionSeq = prog.exprSequence();
   const generator = new NodeGenerator();
-  return prog.accept(generator);
+  return expressionSeq.accept(generator);
 }
 
 export function parse(source: string) {
@@ -109,7 +202,7 @@ export function parse(source: string) {
   const parser = new BabyJuliaParser(tokenStream);
   parser.buildParseTree = true;
 
-  const tree = parser.exprSequence();
+  const tree = parser.program();
   const converted = convertSource(tree);
   return converted;
 }

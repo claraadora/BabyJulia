@@ -18,18 +18,18 @@ varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
 
 // 2. Function Definition
 funcDef:
-	'function' NAME '(' parameters? ')' (
+	'function' funcName = NAME '(' parameters? ')' (
 		INSTANCE_OF returnType = NAME
-	)? NEWLINE body? returnStmt 'end';
+	)? NEWLINE body? returnStmt NEWLINE 'end';
 parameters: parameter (',' parameter)*;
 parameter: name = NAME (INSTANCE_OF type = NAME)?;
 body: exprSequence;
-returnStmt: 'return' fldAccess | atom | identifier;
+returnStmt: 'return' expr?;
 
 // 3. Function Application
 arguments: argument (',' argument)*;
-argument: fldAccess | atom | identifier;
-funcApp: NAME '(' arguments? ')';
+argument: expr;
+funcApp: fname = NAME '(' arguments? ')';
 
 // 4. Struct Definition
 structDef:
@@ -44,10 +44,10 @@ absTypeDeclr:
 // 6. Field Access
 fldAccess: objName = NAME '.' fieldName = NAME;
 
-// 7. Name
+// 7. Identifier
 identifier: NAME;
 
-// 8. Literal
+// 8. Atom 
 atom: NUMBER | STRING | BOOL;
 
 // Lexer rules
@@ -63,7 +63,12 @@ ADD: '+';
 SUB: '-';
 
 // others
-NAME: [a-zA-Z_]+;
+NAME: ('a' ..'z' | 'A' ..'Z' | '_') (
+		'a' ..'z'
+		| 'A' ..'Z'
+		| '_'
+		| '0' ..'9'
+	)*;
 WHITESPACE: [ \r\t]+ -> skip;
 NEWLINE: ('\r'? '\n' | '\r')+;
 ASSIGN: '=';
