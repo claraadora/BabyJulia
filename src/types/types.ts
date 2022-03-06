@@ -97,12 +97,12 @@ export interface Environment {
 export type ValAndType = VarValAndType | FuncValAndType
 
 export interface VarValAndType {
-  value: Primitive
-  type?: string | FuncValAndType
+  value: Primitive | ExpressionSequence
+  type?: string
 }
 
 export interface FuncValAndType {
-  value: Function 
+  value: ExpressionSequence 
   type?: {
     param_types?: string[] 
     return_type?: string 
