@@ -1,6 +1,8 @@
 export type Node = Program | ExpressionSequence | Expression | Parameter | StructField | void;
 
 // Commons
+export type Primitive = number | boolean | string;
+
 export interface Program {
   type: "Program";
   expressions: ExpressionSequence;
@@ -22,7 +24,7 @@ export type Expression =
 
 export interface Literal {
   type: "Literal";
-  value: string;
+  value: Primitive;
 }
 
 export interface Name {
@@ -87,3 +89,23 @@ export interface AbstractTypeDeclaration {
   name: string;
   super_type_name?: string;
 }
+
+export interface Environment {
+  [name: string]: ValAndType[]
+}
+
+export type ValAndType = VarValAndType | FuncValAndType
+
+export interface VarValAndType {
+  value: Primitive
+  type?: string | FuncValAndType
+}
+
+export interface FuncValAndType {
+  value: Function 
+  type?: {
+    param_types?: string[] 
+    return_type?: string 
+  } 
+}
+
