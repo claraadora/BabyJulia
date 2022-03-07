@@ -19,12 +19,24 @@ export type Expression =
   | FieldAccess
   | StructDefinition
   | AbstractTypeDeclaration
-  | Literal
+  | NumberLiteral
+  | StringLiteral
+  | BooleanLiteral
   | Name;
 
-export interface Literal {
-  type: "Literal";
-  value: Primitive;
+export interface NumberLiteral {
+  type: "NumberLiteral";
+  value: string;
+}
+
+export interface StringLiteral {
+  type: "StringLiteral";
+  value: string;
+}
+
+export interface BooleanLiteral {
+  type: "BooleanLiteral";
+  value: string;
 }
 
 export interface Name {
@@ -98,7 +110,7 @@ export type ValAndType = VarValAndType | FuncValAndType
 
 export interface VarValAndType {
   value: Primitive | Object
-  type?: string
+  type: string
 }
 
 export interface FuncValAndType {

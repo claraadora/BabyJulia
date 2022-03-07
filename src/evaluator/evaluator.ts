@@ -1,7 +1,6 @@
 import {
   Name,
   VariableDefinition,
-  Literal,
   Node,
   ExpressionSequence,
   Environment,
@@ -11,9 +10,13 @@ import {
   FunctionApplication,
   FunctionDefinition,
   ValAndType,
+  NumberLiteral,
+  StringLiteral,
+  BooleanLiteral,
 } from "./../types/types";
 import * as _ from "lodash";
 import { isPrimitive } from "util";
+import { env } from "process";
 
 const global_env:Environment = {};
 const ANY = "any";
@@ -26,8 +29,12 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return evaluate_variable_declaration(node);
     case "FunctionDefinition":
       return evaluate_function_definition(node);
-    case "Literal":
-      return evaluate_literal(node);
+    case "NumberLiteral":
+      return evaluate_number_literal(node);
+    case "StringLiteral":
+      return evaluate_string_literal(node);
+    case "BooleanLiteral":
+      return evaluate_boolean_literal(node);
     case "Name":
       return evaluate_name(node);
     default:
@@ -40,7 +47,15 @@ const evaluate_sequence = (node: ExpressionSequence) => {
   return _.last(evaluated_exprs);
 };
 
-const evaluate_literal = (node: Literal): Primitive => {
+const evaluate_number_literal = (node: NumberLiteral): string => {
+  return node.value;
+};
+
+const evaluate_string_literal = (node: StringLiteral): string => {
+  return node.value;
+};
+
+const evaluate_boolean_literal = (node: BooleanLiteral): string => {
   return node.value;
 };
 
@@ -53,20 +68,28 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
   const evalResult = evaluate(node.expr);
 
   if (isPrimitive(evalResult)) { // Literal
-    const evaluated_literal = evaluate_literal(node.expr as Literal);
     const varValAndType = {
-      value: evaluated_literal,
-      type: typeof(evaluated_literal),
+      value: evalResult,
+      type: node.atype ? node.atype as string : ANY,
     } as VarValAndType;
 
-    // Replace the previous var definition
-    global_env[node.name] = [varValAndType];
+    // Replace the previous var definition only if the old atype is "any", 
+    // or if the old atype matches the new one
+    if (!(node.name in global_env) 
+        || global_env[node.name][0].type == "any"
+        || global_env[node.name][0].type == varValAndType.type) {
+      global_env[node.name] = [varValAndType];
+    } else {
+      throw new Error("Cannot convert an object of type \"" + varValAndType.type 
+        + "\" to an object of type \"" + global_env[node.name][0].type + "\"");
+    }
 
   /* TODO: 1) FuncApp from FuncDef, 2) FuncApp from StructDef, 3) FieldAccess */
   } else {
-    const funcApp = node.expr as FunctionApplication;
-    const funcValAndType = global_env[funcApp.name];
+    
   }
+
+  console.log(global_env);
 
   return undefined;
 };
@@ -85,9 +108,7 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
       }
     }
 
-    funcValAndType.type = {
-      param_types,
-    };
+    funcValAndType.type!.param_types = param_types;
   }
 
   // console.log("PARAM_TYPES: ", funcValAndType.type?.param_types);
@@ -95,13 +116,7 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
   // Set type.return_type, if any.
   // Differentiate between 1) return a value of type undefined, 2) not have any return value
   if (node.return_stmt) {
-    if (funcValAndType.type) { // if param_types are not empty
-      funcValAndType.type.return_type = node.return_type ? node.return_type : ANY;
-    } else {
-      funcValAndType.type = {
-        return_type: (node.return_type ? node.return_type : ANY),
-      };
-    }
+    funcValAndType.type!.return_type = node.return_type ? node.return_type : ANY;
   }
   // console.log("RETURN_TYPE: ", funcValAndType.type?.return_type);
 

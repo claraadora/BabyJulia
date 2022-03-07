@@ -12,9 +12,11 @@ import {
   VarDefinitionContext,
   NameContext,
   AbstractTypeDeclarationContext,
-  LiteralContext,
   StructDefinitionContext,
-  StructFieldContext
+  StructFieldContext,
+  NumberContext,
+  StringContext,
+  BooleanContext
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -25,7 +27,6 @@ import { TerminalNode } from "antlr4ts/tree/TerminalNode";
 import { BabyJuliaVisitor } from "../lang/BabyJuliaVisitor";
 import {
   BabyJuliaParser,
-  AtomContext,
   ExprContext,
   ExprSequenceContext,
   ParametersContext,
@@ -34,7 +35,9 @@ import { BabyJuliaLexer } from "../lang/BabyJuliaLexer";
 import {
   ExpressionSequence,
   VariableDefinition,
-  Literal,
+  NumberLiteral,
+  StringLiteral,
+  BooleanLiteral,
   Node,
   Name,
   FunctionDefinition,
@@ -66,11 +69,27 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return ctx.getChild(0).accept(this) as Expression;
   }
 
-  visitLiteral(temp_ctx: LiteralContext): Literal {
-    const ctx = temp_ctx.atom();
+  visitNumber(temp_ctx: NumberContext): NumberLiteral {
+    const ctx = temp_ctx.NUMBER();
     return {
-      type: "Literal",
-      value: getLiteralCtxValue(ctx),
+      type: "NumberLiteral",
+      value: ctx.text,
+    };
+  }
+
+  visitString(temp_ctx: StringContext): StringLiteral {
+    const ctx = temp_ctx.STRING();
+    return {
+      type: "StringLiteral",
+      value: ctx.text,
+    };
+  }
+
+  visitBoolean(temp_ctx: BooleanContext): BooleanLiteral {
+    const ctx = temp_ctx.BOOL();
+    return {
+      type: "BooleanLiteral",
+      value: ctx.text,
     };
   }
 
@@ -219,23 +238,6 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitErrorNode(node: ErrorNode): Node {
     throw new Error("Invalid syntax!");
   }
-}
-
-function getLiteralCtxValue(ctx: AtomContext): Primitive {  
-  // boolean
-  if (ctx.text == "true") {
-    return true;
-  } 
-  if (ctx.text == "false") {
-    return false;
-  }
-
-  // number
-  if (!isNaN(Number(ctx.text))) {
-    return Number(ctx.text);
-  }
-
-  return ctx.text;
 }
 
 function convertSource(prog: ProgramContext): Node {

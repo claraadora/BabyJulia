@@ -6,6 +6,7 @@ end
 
 function myplus(x::Int64)
     x = 3
+    return x
 end 
 
 function myplus(x::Int64, y::String)::String
