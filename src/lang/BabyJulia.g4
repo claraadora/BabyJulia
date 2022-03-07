@@ -10,8 +10,10 @@ expr:
 	| structDef		# StructDefinition
 	| fldAccess		# FieldAccess
 	| absTypeDeclr	# AbstractTypeDeclaration
-	| atom			# Literal
-	| identifier	# Name;
+	| identifier	# Name
+	| NUMBER		# Number
+	| STRING		# String
+	| BOOL			# Boolean;
 
 // 1. Variable Definition
 varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
@@ -48,9 +50,6 @@ fldAccess: objName = NAME '.' fieldName = NAME;
 
 // 7. Identifier
 identifier: NAME;
-
-// 8. Atom 
-atom: NUMBER | STRING | BOOL;
 
 // Lexer rules
 NUMBER: [0-9]+;
