@@ -53,9 +53,10 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
   const evalResult = evaluate(node.expr);
 
   if (isPrimitive(evalResult)) { // Literal
+    const evaluated_literal = evaluate_literal(node.expr as Literal);
     const varValAndType = {
-      value: evaluate_literal(node.expr as Literal),
-      type: node.atype ? node.atype as string : ANY,
+      value: evaluated_literal,
+      type: typeof(evaluated_literal),
     } as VarValAndType;
 
     // Replace the previous var definition
@@ -67,8 +68,6 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
     const funcValAndType = global_env[funcApp.name];
   }
 
-  
-  // console.log(global_env);
   return undefined;
 };
 

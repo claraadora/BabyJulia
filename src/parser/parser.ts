@@ -44,7 +44,8 @@ import {
   FunctionApplication,
   StructDefinition,
   StructField,
-  AbstractTypeDeclaration
+  AbstractTypeDeclaration,
+  Primitive
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -69,7 +70,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const ctx = temp_ctx.atom();
     return {
       type: "Literal",
-      value: ctx.text,
+      value: getLiteralCtxValue(ctx),
     };
   }
 
@@ -218,6 +219,23 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitErrorNode(node: ErrorNode): Node {
     throw new Error("Invalid syntax!");
   }
+}
+
+function getLiteralCtxValue(ctx: AtomContext): Primitive {  
+  // boolean
+  if (ctx.text == "true") {
+    return true;
+  } 
+  if (ctx.text == "false") {
+    return false;
+  }
+
+  // number
+  if (!isNaN(Number(ctx.text))) {
+    return Number(ctx.text);
+  }
+
+  return ctx.text;
 }
 
 function convertSource(prog: ProgramContext): Node {
