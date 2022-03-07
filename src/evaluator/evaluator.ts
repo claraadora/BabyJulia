@@ -10,6 +10,7 @@ import {
   Primitive,
   FunctionApplication,
   FunctionDefinition,
+  ValAndType,
 } from "./../types/types";
 import * as _ from "lodash";
 import { isPrimitive } from "util";
@@ -17,7 +18,7 @@ import { isPrimitive } from "util";
 const global_env:Environment = {};
 const ANY = "any";
 
-export const evaluate = (node: Node): Primitive | void => {
+export const evaluate = (node: Node): Primitive | Object | void => {
   switch (node?.type) {
     case "ExpressionSequence":
       return evaluate_sequence(node);
@@ -43,8 +44,9 @@ const evaluate_literal = (node: Literal): Primitive => {
   return node.value;
 };
 
-const evaluate_name = (node: Name): string => {
-  return node.name;
+const evaluate_name = (node: Name): Primitive | Object => {
+  const varValAndType = global_env[node.name][0] as ValAndType;
+  return varValAndType.value;
 };
 
 const evaluate_variable_declaration = (node: VariableDefinition) => {
@@ -53,13 +55,13 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
   if (isPrimitive(evalResult)) { // Literal
     const varValAndType = {
       value: evaluate_literal(node.expr as Literal),
-      type: node.atype as string,
+      type: node.atype ? node.atype as string : ANY,
     } as VarValAndType;
 
     // Replace the previous var definition
     global_env[node.name] = [varValAndType];
 
-  /* 1) FuncApp from FuncDef, TODO: 2) FuncApp from StructDef, 3) FieldAccess */
+  /* TODO: 1) FuncApp from FuncDef, 2) FuncApp from StructDef, 3) FieldAccess */
   } else {
     const funcApp = node.expr as FunctionApplication;
     const funcValAndType = global_env[funcApp.name];
@@ -95,7 +97,7 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
     };
   }
 
-  // console.log("PARAM_TYPES: ", funcValAndType.type?.param_types);
+  console.log("PARAM_TYPES: ", funcValAndType.type?.param_types);
 
   // Set type.return_type, if any.
   // Differentiate between 1) return a value of type undefined, 2) not have any return value
@@ -108,7 +110,7 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
       };
     }
   }
-  // console.log("RETURN_TYPE: ", funcValAndType.type?.return_type);
+  console.log("RETURN_TYPE: ", funcValAndType.type?.return_type);
 
   // Extend the previous func definition if func previously defined
   if (node.name in global_env) {
