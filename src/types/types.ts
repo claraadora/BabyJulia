@@ -25,6 +25,7 @@ export type Expression =
   | FunctionApplication
   | FieldAccess
   | StructDefinition
+  | StructField
   | AbstractTypeDeclaration
   | NumberLiteral
   | StringLiteral

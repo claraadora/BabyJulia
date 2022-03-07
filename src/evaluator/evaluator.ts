@@ -14,6 +14,8 @@ import {
   ReturnStatement,
   EvaluatedReturnStatement,
   AbstractTypeDeclaration,
+  StructDefinition,
+  Expression
 } from "./../types/types";
 import * as _ from "lodash";
 
@@ -33,6 +35,8 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return evaluate_string_literal(node);
     case "BooleanLiteral":
       return evaluate_boolean_literal(node);
+    case "StructDefinition":
+      return evaluate_struct_definition(node);
     case "Name":
       return evaluate_name(node);
     case "VariableDefinition":
@@ -173,4 +177,40 @@ function get_evaluated_return_value(
 // Abstract type declaration.
 const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
   type_graph.add_node(node.name, node.super_type_name ?? ANY);
+};
+
+const make_expr_sequence = (node: StructDefinition): ExpressionSequence => {
+  const expressions = [] as Expression[];
+  for (let field of node.fields) {
+    expressions.push(field as Expression);
+  }
+
+  return {
+    type: "ExpressionSequence",
+    expressions,
+  };
+};
+
+const evaluate_struct_definition = (node: StructDefinition) => {
+  const field_types = [] as string[];
+  for (let field of node.fields) {
+    field_types.push(field.atype ? field.atype as string : ANY);
+  }  
+
+  const funcValAndType = {
+    value: make_expr_sequence(node),
+    type: {
+      param_types: field_types,
+      return_type: node.struct_name,
+    }
+  } 
+
+  // console.log("VAL: ", funcValAndType.value);
+  // console.log("PARAM_TYPES: ", funcValAndType.type.param_types);
+  // console.log("RETURN_TYPE: ", funcValAndType.type.return_type);
+
+  global_env[node.struct_name] = [funcValAndType];
+
+  // console.log(global_env);
+  return undefined;
 };
