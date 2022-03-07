@@ -68,16 +68,10 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
   }
 
   
-  console.log(global_env);
+  // console.log(global_env);
   return undefined;
 };
 
-/* function myplus(x, y)
-    x = 5
-    y::Int64 = 10
-    return x
-  end 
- */
 const evaluate_function_definition = (node: FunctionDefinition) => {
   const funcValAndType = {
     value: node.body,
@@ -97,7 +91,7 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
     };
   }
 
-  console.log("PARAM_TYPES: ", funcValAndType.type?.param_types);
+  // console.log("PARAM_TYPES: ", funcValAndType.type?.param_types);
 
   // Set type.return_type, if any.
   // Differentiate between 1) return a value of type undefined, 2) not have any return value
@@ -110,7 +104,7 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
       };
     }
   }
-  console.log("RETURN_TYPE: ", funcValAndType.type?.return_type);
+  // console.log("RETURN_TYPE: ", funcValAndType.type?.return_type);
 
   // Extend the previous func definition if func previously defined
   if (node.name in global_env) {
@@ -119,6 +113,6 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
     global_env[node.name] = [funcValAndType];
   }
 
-  console.log(global_env);
+  // console.log(global_env);
   return undefined;
 };
