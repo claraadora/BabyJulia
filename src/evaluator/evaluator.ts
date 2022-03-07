@@ -8,20 +8,27 @@ import {
   ValAndType,
   VarValAndType,
   FuncValAndType,
-  Primitive
+  Primitive,
+  FunctionApplication,
+  FunctionDefinition,
+  Expression
 } from "./../types/types";
 import * as _ from "lodash";
+import { isPrimitive } from "util";
 
 const global_env:Environment = {};
+const ANY = "any";
 
 export const evaluate = (node: Node): Primitive | void => {
   switch (node?.type) {
     case "ExpressionSequence":
       return evaluate_sequence(node);
-    case "Literal":
-      return evaluate_literal(node);
     case "VariableDefinition":
       return evaluate_variable_declaration(node);
+    case "FunctionDefinition":
+      return evaluate_function_definition(node);
+    case "Literal":
+      return evaluate_literal(node);
     case "Name":
       return evaluate_name(node);
     default:
@@ -43,20 +50,72 @@ const evaluate_name = (node: Name): string => {
 };
 
 const evaluate_variable_declaration = (node: VariableDefinition) => {
-  switch (node.expr.type) {
-    case "Literal": // e.g. x = 3 or x::Int64 = 100 
-      const varValAndType = {
-        value: evaluate_literal(node.expr as Literal),
-        type: node.atype as string,
-      } as VarValAndType;
+  const evalResult = evaluate(node.expr);
 
-      // Replace the previous var definition
-      global_env[node.name] = [varValAndType];
-    case "FunctionApplication": // e.g. foo = Foo("a", 1, true)
-      
-    default:
+  if (isPrimitive(evalResult)) { // Literal
+    const varValAndType = {
+      value: evaluate_literal(node.expr as Literal),
+      type: node.atype as string,
+    } as VarValAndType;
+
+    // Replace the previous var definition
+    global_env[node.name] = [varValAndType];
+  } else { // FunctionApplication, FieldAccess
+
   }
 
-  console.log(node.name," : ", global_env[node.name]);
+  
+  console.log(global_env);
+  return undefined;
+};
+
+/* function myplus(x, y)
+    x = 5
+    y::Int64 = 10
+    return x
+  end 
+ */
+const evaluate_function_definition = (node: FunctionDefinition) => {
+  const funcValAndType = {
+    value: node.body,
+  } as FuncValAndType;
+
+  // Set type.param_types, if any.
+  if (node.params) {
+    const param_types = [] as string[];
+    for (let param of node.params) {
+      if (param) {
+        param_types.push(param.atype ? param.atype as string : ANY);
+      }
+    }
+
+    funcValAndType.type = {
+      param_types,
+    };
+  }
+
+  // console.log("PARAM_TYPES: ", funcValAndType.type?.param_types);
+
+  // Set type.return_type, if any.
+  // Differentiate between 1) return a value of type undefined, 2) not have any return value
+  if (node.return_stmt) {
+    if (funcValAndType.type) { // if param_types are not empty
+      funcValAndType.type.return_type = node.return_type ? node.return_type : ANY;
+    } else {
+      funcValAndType.type = {
+        return_type: (node.return_type ? node.return_type : ANY),
+      };
+    }
+  }
+  // console.log("RETURN_TYPE: ", funcValAndType.type?.return_type);
+
+  // Extend the previous func definition if func previously defined
+  if (node.name in global_env) {
+    global_env[node.name].push(funcValAndType);
+  } else {
+    global_env[node.name] = [funcValAndType];
+  }
+
+  console.log(global_env);
   return undefined;
 };

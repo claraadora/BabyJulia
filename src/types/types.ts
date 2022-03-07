@@ -50,7 +50,7 @@ export interface VariableDefinition {
 export interface FunctionDefinition {
   type: "FunctionDefinition";
   name: string;
-  params: Parameter[];
+  params?: Parameter[];
   body: ExpressionSequence | null;
   return_stmt: Expression | null;
   return_type?: string;
@@ -97,7 +97,7 @@ export interface Environment {
 export type ValAndType = VarValAndType | FuncValAndType
 
 export interface VarValAndType {
-  value: Primitive | ExpressionSequence
+  value: Primitive | Object
   type?: string
 }
 
