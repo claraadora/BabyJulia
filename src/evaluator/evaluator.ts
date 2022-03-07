@@ -205,12 +205,12 @@ const evaluate_struct_definition = (node: StructDefinition) => {
     }
   } 
 
-  // console.log("VAL: ", funcValAndType.value);
-  // console.log("PARAM_TYPES: ", funcValAndType.type.param_types);
-  // console.log("RETURN_TYPE: ", funcValAndType.type.return_type);
+  // Don't allow re-declaration of struct
+  if (node.struct_name in global_env) {
+    throw new Error("Struct \"" + node.struct_name + "\" has been declared"); 
+  }
 
   global_env[node.struct_name] = [funcValAndType];
 
-  // console.log(global_env);
   return undefined;
 };
