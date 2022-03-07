@@ -5,13 +5,11 @@ import {
   Node,
   ExpressionSequence,
   Environment,
-  ValAndType,
   VarValAndType,
   FuncValAndType,
   Primitive,
   FunctionApplication,
   FunctionDefinition,
-  Expression
 } from "./../types/types";
 import * as _ from "lodash";
 import { isPrimitive } from "util";
@@ -60,8 +58,11 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
 
     // Replace the previous var definition
     global_env[node.name] = [varValAndType];
-  } else { // FunctionApplication, FieldAccess
 
+  /* 1) FuncApp from FuncDef, TODO: 2) FuncApp from StructDef, 3) FieldAccess */
+  } else {
+    const funcApp = node.expr as FunctionApplication;
+    const funcValAndType = global_env[funcApp.name];
   }
 
   
