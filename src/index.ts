@@ -8,6 +8,7 @@ function main() {
   const program = fs.readFileSync(file_name, "utf8");
 
   const parsed_program = parse(program);
+  // console.log(JSON.stringify(parsed_program, null, 4));
   try {
     const evaluated_program = evaluate(parsed_program);
     console.log("evaluated_program:", evaluated_program);
@@ -16,7 +17,6 @@ function main() {
       console.log(err.message);
     }
   }
-  // console.log(JSON.stringify(parsed_program, null, 4));
 
 }
 main();

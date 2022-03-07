@@ -86,11 +86,9 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
 
   /* TODO: 1) FuncApp from FuncDef, 2) FuncApp from StructDef, 3) FieldAccess */
   } else {
-    
+
   }
-
-  console.log(global_env);
-
+  
   return undefined;
 };
 
@@ -108,17 +106,16 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
       }
     }
 
-    funcValAndType.type!.param_types = param_types;
+    funcValAndType.type = {
+      param_types,
+    };
   }
-
-  // console.log("PARAM_TYPES: ", funcValAndType.type?.param_types);
 
   // Set type.return_type, if any.
   // Differentiate between 1) return a value of type undefined, 2) not have any return value
   if (node.return_stmt) {
     funcValAndType.type!.return_type = node.return_type ? node.return_type : ANY;
   }
-  // console.log("RETURN_TYPE: ", funcValAndType.type?.return_type);
 
   // Extend the previous func definition if func previously defined
   if (node.name in global_env) {
@@ -127,6 +124,5 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
     global_env[node.name] = [funcValAndType];
   }
 
-  // console.log(global_env);
   return undefined;
 };
