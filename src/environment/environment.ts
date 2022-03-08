@@ -3,7 +3,6 @@ import {
   FuncValAndType,
   is_declaration,
   is_function_definition,
-  is_variable_definition,
   Primitive,
   VarValAndType,
 } from "./../types/types";
@@ -12,7 +11,7 @@ import {
   FunctionDefinition,
   VariableDefinition,
 } from "../types/types";
-import _ from "lodash";
+import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
 
 const make_unassigned_callable_vnt = (
@@ -179,6 +178,7 @@ class EnvironmentFrame {
   is_signature_declaration_allowed(name: string, vnt: FuncValAndType) {
     // Only allowed if there is no existing function with same name and parameter types.
     return (
+      !this.signature_to_vnts[name] ||
       Object.values(this.signature_to_vnts[name]).filter((existing_vnt) =>
         _.isEqual(existing_vnt, vnt)
       ).length === 0

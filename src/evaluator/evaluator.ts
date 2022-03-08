@@ -20,7 +20,7 @@ import * as _ from "lodash";
 import { Environment } from "../environment/environment";
 import { TypeGraph } from "../type_graph/type_graph";
 
-const ANY = "any";
+const ANY = "Any";
 const RETURN_VALUE_TAG = "return_value";
 
 const type_graph = new TypeGraph();
