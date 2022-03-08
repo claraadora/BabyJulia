@@ -12,9 +12,12 @@ import {
   VarDefinitionContext,
   NameContext,
   AbstractTypeDeclarationContext,
-  LiteralContext,
   StructDefinitionContext,
-  StructFieldContext
+  StructFieldContext,
+  NumberContext,
+  StringContext,
+  BooleanContext,
+  ReturnStatementContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -25,7 +28,6 @@ import { TerminalNode } from "antlr4ts/tree/TerminalNode";
 import { BabyJuliaVisitor } from "../lang/BabyJuliaVisitor";
 import {
   BabyJuliaParser,
-  AtomContext,
   ExprContext,
   ExprSequenceContext,
   ParametersContext,
@@ -34,7 +36,9 @@ import { BabyJuliaLexer } from "../lang/BabyJuliaLexer";
 import {
   ExpressionSequence,
   VariableDefinition,
-  Literal,
+  NumberLiteral,
+  StringLiteral,
+  BooleanLiteral,
   Node,
   Name,
   FunctionDefinition,
@@ -44,7 +48,9 @@ import {
   FunctionApplication,
   StructDefinition,
   StructField,
-  AbstractTypeDeclaration
+  AbstractTypeDeclaration,
+  Primitive,
+  ReturnStatement,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -65,10 +71,26 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return ctx.getChild(0).accept(this) as Expression;
   }
 
-  visitLiteral(temp_ctx: LiteralContext): Literal {
-    const ctx = temp_ctx.atom();
+  visitNumber(temp_ctx: NumberContext): NumberLiteral {
+    const ctx = temp_ctx.NUMBER();
     return {
-      type: "Literal",
+      type: "NumberLiteral",
+      value: ctx.text,
+    };
+  }
+
+  visitString(temp_ctx: StringContext): StringLiteral {
+    const ctx = temp_ctx.STRING();
+    return {
+      type: "StringLiteral",
+      value: ctx.text,
+    };
+  }
+
+  visitBoolean(temp_ctx: BooleanContext): BooleanLiteral {
+    const ctx = temp_ctx.BOOL();
+    return {
+      type: "BooleanLiteral",
       value: ctx.text,
     };
   }
@@ -98,7 +120,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       type: "VariableDefinition",
       name: ctx._name.text!,
       expr: ctx.expr().accept(this) as Expression,
-      atype: ctx._type ? ctx._type.text! : null,
+      atype: ctx._type?.text ?? null,
     };
   }
 
@@ -115,26 +137,14 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
     // Get body.
     const body_ctx = ctx.body();
-    const body = body_ctx
-      ? this.visitExprSequence(body_ctx.exprSequence())
-      : null;
-
-    // Get return statement.
-    const return_stmt_ctx = ctx.returnStmt();
-    const return_stmt_expr_ctx = return_stmt_ctx
-      ? return_stmt_ctx.expr()
-      : null;
-    const return_stmt = return_stmt_expr_ctx
-      ? (return_stmt_expr_ctx.accept(this) as Expression)
-      : null;
+    const body = this.visitExprSequence(body_ctx.exprSequence());
 
     return {
       type: "FunctionDefinition",
       name: ctx._funcName.text!,
       params,
       body,
-      return_stmt,
-      return_type: ctx._returnType?.text,
+      return_type: ctx._returnType?.text ?? null,
     };
   }
 
@@ -142,7 +152,14 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "Parameter",
       name: ctx._name.text!,
-      atype: ctx._type ? ctx._type.text! : null,
+      atype: ctx._type?.text ?? null,
+    };
+  }
+
+  visitReturnStatement(ctx: ReturnStatementContext): ReturnStatement {
+    return {
+      type: "ReturnStatement",
+      expr: (ctx.returnStmt().expr()?.accept(this) as Expression) ?? null,
     };
   }
 
@@ -181,8 +198,8 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "StructDefinition",
       struct_name: ctx._structName.text!,
-      super_type_name: ctx._supertype?.text,
-      fields
+      super_type_name: ctx._supertype?.text ?? null,
+      fields,
     };
   }
 
@@ -190,7 +207,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "StructField",
       name: ctx._varName.text!,
-      atype: ctx._type ? ctx._type.text! : null,
+      atype: ctx._type?.text ?? null,
     };
   }
 
@@ -202,7 +219,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "AbstractTypeDeclaration",
       name: ctx._type.text!,
-      super_type_name: ctx._supertype?.text,
+      super_type_name: ctx._supertype?.text ?? null,
     };
   }
 

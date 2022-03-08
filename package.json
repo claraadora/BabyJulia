@@ -24,6 +24,6 @@
   "scripts": {
     "antlr4ts": "antlr4ts -visitor ./src/lang/BabyJulia.g4",
     "build": "tsc",
-    "parse": "node dist/index.js {0}"
+    "eval": "node dist/index.js {0}"
   }
 }

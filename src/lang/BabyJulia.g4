@@ -10,8 +10,11 @@ expr:
 	| structDef		# StructDefinition
 	| fldAccess		# FieldAccess
 	| absTypeDeclr	# AbstractTypeDeclaration
-	| atom			# Literal
-	| identifier	# Name;
+	| identifier	# Name
+	| returnStmt	# ReturnStatement
+	| NUMBER		# Number
+	| STRING		# String
+	| BOOL			# Boolean;
 
 // 1. Variable Definition
 varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
@@ -20,7 +23,7 @@ varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
 funcDef:
 	'function' funcName = NAME '(' parameters? ')' (
 		INSTANCE_OF returnType = NAME
-	)? NEWLINE body? returnStmt NEWLINE 'end';
+	)? NEWLINE body NEWLINE 'end';
 parameters: parameter (',' parameter)*;
 parameter: name = NAME (INSTANCE_OF type = NAME)?;
 body: exprSequence;
@@ -48,9 +51,6 @@ fldAccess: objName = NAME '.' fieldName = NAME;
 
 // 7. Identifier
 identifier: NAME;
-
-// 8. Atom 
-atom: NUMBER | STRING | BOOL;
 
 // Lexer rules
 NUMBER: [0-9]+;
