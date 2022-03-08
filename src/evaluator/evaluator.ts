@@ -3,7 +3,6 @@ import {
   VariableDefinition,
   Node,
   ExpressionSequence,
-  Environment,
   VarValAndType,
   FuncValAndType,
   Primitive,
@@ -14,14 +13,16 @@ import {
   ReturnStatement,
   EvaluatedReturnStatement,
   AbstractTypeDeclaration,
+  ValAndType,
+  is_primitive,
 } from "./../types/types";
 import * as _ from "lodash";
+import { Environment } from "../environment/environment";
+import { TypeGraph } from "../type_graph/type_graph";
 
-const global_env: Environment = {};
-const type_graph: TypeGraph = new TypeGraph();
+const type_graph = new TypeGraph();
+const env = new Environment(type_graph);
 const ANY = "any";
-
-const isPrimitive = (value: any): boolean => Object(value) !== value;
 
 export const evaluate = (node: Node): Primitive | Object | void => {
   switch (node?.type) {
@@ -75,8 +76,7 @@ const evaluate_boolean_literal = (node: BooleanLiteral): boolean => {
 };
 
 const evaluate_name = (node: Name): Primitive | Object => {
-  const varValAndType = global_env[node.name][0] as VarValAndType;
-  return varValAndType.value;
+  return env.lookup_name(node.name, false);
 };
 
 // TODO: add field access here.
@@ -85,31 +85,8 @@ const evaluate_name = (node: Name): Primitive | Object => {
 const evaluate_variable_declaration = (node: VariableDefinition) => {
   const evalResult = evaluate(node.expr);
 
-  if (isPrimitive(evalResult)) {
-    // Literal
-    const varValAndType: VarValAndType = {
-      value: evalResult as Object | Primitive,
-      type: node.atype ?? ANY,
-    };
-
-    // Replace the previous var definition only if the old atype is "any",
-    // or if the old atype matches the new one
-    if (
-      !(node.name in global_env) ||
-      global_env[node.name][0].type == ANY ||
-      global_env[node.name][0].type == varValAndType.type
-    ) {
-      global_env[node.name] = [varValAndType];
-    } else {
-      throw new Error(
-        'Cannot convert an object of type "' +
-          varValAndType.type +
-          '" to an object of type "' +
-          global_env[node.name][0].type +
-          '"'
-      );
-    }
-
+  if (is_primitive(evalResult)) {
+    env.upsert_;
     /* TODO: 1) FuncApp from FuncDef, 2) FuncApp from StructDef, 3) FieldAccess */
   } else {
   }
@@ -174,3 +151,14 @@ function get_evaluated_return_value(
 const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
   type_graph.add_node(node.name, node.super_type_name ?? ANY);
 };
+function is_declaration(expr: Expression): unknown {
+  throw new Error("Function not implemented.");
+}
+
+function is_variable_definition(def: VariableDefinition | FunctionDefinition) {
+  throw new Error("Function not implemented.");
+}
+
+function isPrimitive(evalResult: string | number | boolean | void | Object) {
+  throw new Error("Function not implemented.");
+}

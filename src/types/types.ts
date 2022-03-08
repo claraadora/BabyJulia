@@ -114,14 +114,15 @@ export interface AbstractTypeDeclaration {
   super_type_name: string | null;
 }
 
-export interface Environment {
+export type Environment = EnvironmentFrame[];
+export interface EnvironmentFrame {
   [name: string]: ValAndType[];
 }
 
 export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
-  value: Primitive | Object;
+  value: Primitive | Object | null;
   type: string;
 }
 
@@ -132,3 +133,17 @@ export interface FuncValAndType {
     return_type: string | null;
   };
 }
+
+// Type guards
+export const is_primitive = (value: any): boolean => Object(value) !== value;
+
+export const is_variable_definition = (
+  node: Node
+): node is VariableDefinition => node?.type === "VariableDefinition";
+
+export const is_function_definition = (
+  node: Node
+): node is FunctionDefinition => node?.type === "FunctionDefinition";
+
+export const is_declaration = (node: Node): boolean =>
+  is_variable_definition(node) || is_function_definition(node);
