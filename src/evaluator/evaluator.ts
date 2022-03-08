@@ -20,9 +20,11 @@ import * as _ from "lodash";
 import { Environment } from "../environment/environment";
 import { TypeGraph } from "../type_graph/type_graph";
 
+const ANY = "any";
+const RETURN_VALUE_TAG = "return_value";
+
 const type_graph = new TypeGraph();
 const env = new Environment(type_graph);
-const ANY = "any";
 
 export const evaluate = (node: Node): Primitive | Object | void => {
   switch (node?.type) {
@@ -50,6 +52,10 @@ export const evaluate = (node: Node): Primitive | Object | void => {
 
 // Expressions.
 const evaluate_sequence = (node: ExpressionSequence) => {
+  // Extend environment.
+  env.extend_env(node);
+
+  // Evaluate expressions.
   const expressions = node.expressions;
   let last_evaluated_expr;
 
@@ -76,54 +82,25 @@ const evaluate_boolean_literal = (node: BooleanLiteral): boolean => {
 };
 
 const evaluate_name = (node: Name): Primitive | Object => {
-  return env.lookup_name(node.name, false);
+  return env.lookup_name(node.name);
 };
 
 // TODO: add field access here.
 
 // Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
-  const evalResult = evaluate(node.expr);
-
-  if (is_primitive(evalResult)) {
-    env.upsert_;
-    /* TODO: 1) FuncApp from FuncDef, 2) FuncApp from StructDef, 3) FieldAccess */
-  } else {
-  }
-
-  return undefined;
+  const eval_result = evaluate(node.expr);
+  env.update_name(node.name, eval_result!);
 };
 
 // Function definition.
 const evaluate_function_definition = (node: FunctionDefinition) => {
-  const funcValAndType: FuncValAndType = {
-    value: node.body,
-    type: {
-      param_types: [],
-      return_type: "",
-    },
-  };
-
-  // Set type.param_types, if any.
-  funcValAndType.type.param_types = node.params.map(
-    (param) => param.atype ?? ANY
+  env.update_signature(
+    node.name,
+    node.params.map((param) => param.atype ?? ANY),
+    node.body
   );
-
-  // Set type.return_type, if any.
-  // Differentiate between 1) return a value of type undefined, 2) not have any return value
-  funcValAndType.type.return_type = node.return_type ?? ANY;
-
-  // Extend the previous func definition if func previously defined
-  if (node.name in global_env) {
-    global_env[node.name].push(funcValAndType);
-  } else {
-    global_env[node.name] = [funcValAndType];
-  }
-
-  return undefined;
 };
-
-const RETURN_VALUE_TAG = "return_value";
 
 function evaluate_return_statement(node: ReturnStatement) {
   return [RETURN_VALUE_TAG, node.expr ? evaluate(node.expr) : undefined];
@@ -151,14 +128,3 @@ function get_evaluated_return_value(
 const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
   type_graph.add_node(node.name, node.super_type_name ?? ANY);
 };
-function is_declaration(expr: Expression): unknown {
-  throw new Error("Function not implemented.");
-}
-
-function is_variable_definition(def: VariableDefinition | FunctionDefinition) {
-  throw new Error("Function not implemented.");
-}
-
-function isPrimitive(evalResult: string | number | boolean | void | Object) {
-  throw new Error("Function not implemented.");
-}

@@ -69,7 +69,7 @@ export class Environment {
     for (let i = name.length - 1; i >= 0; i--) {
       const curr_frame = this.frames[i];
       if (curr_frame.is_name_exist(name)) {
-        return curr_frame.get_name_vnt(name).value;
+        return curr_frame.get_name_vnt(name).value!;
       }
     }
     throw new Error("Looking up non-existing name!!"); // TODO: change to a better error msg
@@ -90,7 +90,7 @@ export class Environment {
     return this.frames[this.frames.length - 1];
   }
 
-  update_name(name: string, value: Primitive) {
+  update_name(name: string, value: Primitive | Object) {
     const curr_frame = this.get_curr_frame();
     curr_frame.update_name_value(name, value);
   }
@@ -121,7 +121,7 @@ class EnvironmentFrame {
     this.name_to_vnts[name] = vnt;
   }
 
-  update_name_value(name: string, value: Primitive) {
+  update_name_value(name: string, value: Primitive | Object) {
     this.name_to_vnts[name].value = value;
   }
 
