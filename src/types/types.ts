@@ -1,4 +1,11 @@
-export type Node = Program | ExpressionSequence | Expression | Parameter | StructField | void;
+export type Node =
+  | Program
+  | ExpressionSequence
+  | Expression
+  | Parameter
+  | StructField
+  | ReturnStatement
+  | void;
 
 // Commons
 export type Primitive = number | boolean | string;
@@ -62,10 +69,9 @@ export interface VariableDefinition {
 export interface FunctionDefinition {
   type: "FunctionDefinition";
   name: string;
-  params?: Parameter[];
-  body: ExpressionSequence | null;
-  return_stmt: Expression | null;
-  return_type?: string;
+  params: Parameter[];
+  body: ExpressionSequence;
+  return_type: string | null;
 }
 
 export interface Parameter {
@@ -74,6 +80,12 @@ export interface Parameter {
   atype: string | null;
 }
 
+export interface ReturnStatement {
+  type: "ReturnStatement";
+  expr: Expression | null;
+}
+
+export type EvaluatedReturnStatement = [string, any];
 // Function Application
 export interface FunctionApplication {
   type: "FunctionApplication";
@@ -85,7 +97,7 @@ export interface FunctionApplication {
 export interface StructDefinition {
   type: "StructDefinition";
   struct_name: string;
-  super_type_name?: string;
+  super_type_name: string | null;
   fields: StructField[];
 }
 
@@ -99,25 +111,24 @@ export interface StructField {
 export interface AbstractTypeDeclaration {
   type: "AbstractTypeDeclaration";
   name: string;
-  super_type_name?: string;
+  super_type_name: string | null;
 }
 
 export interface Environment {
-  [name: string]: ValAndType[]
+  [name: string]: ValAndType[];
 }
 
-export type ValAndType = VarValAndType | FuncValAndType
+export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
-  value: Primitive | Object
-  type: string
+  value: Primitive | Object;
+  type: string;
 }
 
 export interface FuncValAndType {
-  value: ExpressionSequence 
-  type?: {
-    param_types?: string[] 
-    return_type?: string 
-  } 
+  value: ExpressionSequence | null;
+  type: {
+    param_types: string[];
+    return_type: string | null;
+  };
 }
-

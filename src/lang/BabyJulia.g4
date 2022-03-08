@@ -11,6 +11,7 @@ expr:
 	| fldAccess		# FieldAccess
 	| absTypeDeclr	# AbstractTypeDeclaration
 	| identifier	# Name
+	| returnStmt	# ReturnStatement
 	| NUMBER		# Number
 	| STRING		# String
 	| BOOL			# Boolean;
@@ -22,7 +23,7 @@ varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
 funcDef:
 	'function' funcName = NAME '(' parameters? ')' (
 		INSTANCE_OF returnType = NAME
-	)? NEWLINE body? returnStmt NEWLINE 'end';
+	)? NEWLINE body NEWLINE 'end';
 parameters: parameter (',' parameter)*;
 parameter: name = NAME (INSTANCE_OF type = NAME)?;
 body: exprSequence;
