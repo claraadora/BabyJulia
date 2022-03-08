@@ -13,10 +13,12 @@ import {
   BooleanLiteral,
   ReturnStatement,
   EvaluatedReturnStatement,
+  AbstractTypeDeclaration,
 } from "./../types/types";
 import * as _ from "lodash";
 
 const global_env: Environment = {};
+const type_graph: TypeGraph = new TypeGraph();
 const ANY = "any";
 
 const isPrimitive = (value: any): boolean => Object(value) !== value;
@@ -25,10 +27,6 @@ export const evaluate = (node: Node): Primitive | Object | void => {
   switch (node?.type) {
     case "ExpressionSequence":
       return evaluate_sequence(node);
-    case "VariableDefinition":
-      return evaluate_variable_declaration(node);
-    case "FunctionDefinition":
-      return evaluate_function_definition(node);
     case "NumberLiteral":
       return evaluate_number_literal(node);
     case "StringLiteral":
@@ -37,12 +35,19 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return evaluate_boolean_literal(node);
     case "Name":
       return evaluate_name(node);
+    case "VariableDefinition":
+      return evaluate_variable_declaration(node);
+    case "FunctionDefinition":
+      return evaluate_function_definition(node);
+    case "AbstractTypeDeclaration":
+      return evaluate_abstract_type_declaration(node);
     case "ReturnStatement":
       return evaluate_return_statement(node);
     default:
   }
 };
 
+// Expressions.
 const evaluate_sequence = (node: ExpressionSequence) => {
   const expressions = node.expressions;
   let last_evaluated_expr;
@@ -69,12 +74,14 @@ const evaluate_boolean_literal = (node: BooleanLiteral): boolean => {
   return node.value === "true";
 };
 
-// TODO: should we separate the data structure?
 const evaluate_name = (node: Name): Primitive | Object => {
   const varValAndType = global_env[node.name][0] as VarValAndType;
   return varValAndType.value;
 };
 
+// TODO: add field access here.
+
+// Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
   const evalResult = evaluate(node.expr);
 
@@ -110,6 +117,7 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
   return undefined;
 };
 
+// Function definition.
 const evaluate_function_definition = (node: FunctionDefinition) => {
   const funcValAndType: FuncValAndType = {
     value: node.body,
@@ -157,3 +165,12 @@ function get_evaluated_return_value(
 ) {
   return evaluated_return_statement[1];
 }
+
+// TODO: add function application here
+
+// TODO: add struct definition here
+
+// Abstract type declaration.
+const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
+  type_graph.add_node(node.name, node.super_type_name ?? ANY);
+};

@@ -52,7 +52,7 @@ class TypeGraph {
     parent_node.children.add(new_node);
   }
 
-  // Get distance from child node to parent node by traversing up the graph.
+  // Get distance from child node to parent node by traversing up the graph. If unreachable, -1 is returned.
   get_distance_from(child_node_name: string, parent_node_name: string) {
     const child_node = this.get_node(child_node_name);
     const parent_node = this.get_node(parent_node_name);
@@ -63,23 +63,7 @@ class TypeGraph {
       ptr = ptr.parent;
       distance++;
     }
-    return distance;
-  }
-
-  get_total_distance_from(
-    child_type_names: string[],
-    parent_type_names: string[]
-  ) {
-    const N = child_type_names.length;
-    let total_distance = 0;
-
-    for (let i = 0; i < N; i++) {
-      total_distance += this.get_distance_from(
-        child_type_names[i],
-        parent_type_names[i]
-      );
-    }
-    return total_distance;
+    return child_node === parent_node ? distance : -1;
   }
 }
 
