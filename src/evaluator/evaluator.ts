@@ -35,14 +35,14 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return evaluate_string_literal(node);
     case "BooleanLiteral":
       return evaluate_boolean_literal(node);
-    case "StructDefinition":
-      return evaluate_struct_definition(node);
     case "Name":
       return evaluate_name(node);
     case "VariableDefinition":
       return evaluate_variable_declaration(node);
     case "FunctionDefinition":
       return evaluate_function_definition(node);
+    case "StructDefinition":
+      return evaluate_struct_definition(node);
     case "AbstractTypeDeclaration":
       return evaluate_abstract_type_declaration(node);
     case "ReturnStatement":
