@@ -15,7 +15,8 @@ import {
   EvaluatedReturnStatement,
   AbstractTypeDeclaration,
   StructDefinition,
-  Expression
+  Expression,
+  FieldAccess
 } from "./../types/types";
 import * as _ from "lodash";
 
@@ -37,6 +38,8 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return evaluate_boolean_literal(node);
     case "Name":
       return evaluate_name(node);
+    case "FieldAccess":
+      return evaluate_field_access(node);
     case "VariableDefinition":
       return evaluate_variable_declaration(node);
     case "FunctionDefinition":
@@ -83,7 +86,21 @@ const evaluate_name = (node: Name): Primitive | Object => {
   return varValAndType.value;
 };
 
-// TODO: add field access here.
+// Field access.
+const evaluate_field_access = (node: FieldAccess): Primitive => {
+  if (!(node.objName in global_env)) {
+    throw new Error(
+      '"' +
+      node.objName +
+      '" not defined'
+    ); 
+  }
+
+  const varValAndType = global_env[node.objName][0] as VarValAndType;
+  const obj = varValAndType.value as Object;
+
+  return obj[node.fieldName];
+}
 
 // Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
