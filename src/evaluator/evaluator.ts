@@ -172,18 +172,10 @@ function get_evaluated_return_value(
 
 // TODO: add function application here
 
-// TODO: add struct definition here
-
-// Abstract type declaration.
-const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
-  type_graph.add_node(node.name, node.super_type_name ?? ANY);
-};
-
+// Struct definition.
 const make_expr_sequence = (node: StructDefinition): ExpressionSequence => {
   const expressions = [] as Expression[];
-  for (let field of node.fields) {
-    expressions.push(field as Expression);
-  }
+  node.fields.forEach((field) => expressions.push(field as Expression));
 
   return {
     type: "ExpressionSequence",
@@ -193,9 +185,8 @@ const make_expr_sequence = (node: StructDefinition): ExpressionSequence => {
 
 const evaluate_struct_definition = (node: StructDefinition) => {
   const field_types = [] as string[];
-  for (let field of node.fields) {
-    field_types.push(field.atype ? field.atype as string : ANY);
-  }  
+
+  node.fields.forEach((field) => field_types.push(field.atype ?? ANY));
 
   const funcValAndType = {
     value: make_expr_sequence(node),
@@ -207,10 +198,18 @@ const evaluate_struct_definition = (node: StructDefinition) => {
 
   // Don't allow re-declaration of struct
   if (node.struct_name in global_env) {
-    throw new Error("Struct \"" + node.struct_name + "\" has been declared"); 
+    throw new Error(
+      'Struct "' +
+      node.struct_name +
+      '" has been declared'
+    ); 
   }
 
   global_env[node.struct_name] = [funcValAndType];
-
   return undefined;
+};
+
+// Abstract type declaration.
+const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
+  type_graph.add_node(node.name, node.super_type_name ?? ANY);
 };
