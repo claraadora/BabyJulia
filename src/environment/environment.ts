@@ -1,6 +1,7 @@
 import {
   Expression,
   FuncValAndType,
+  is_declaration,
   is_function_definition,
   is_variable_definition,
   Primitive,
@@ -42,27 +43,18 @@ export class Environment {
   extend_env(expressionSeq: ExpressionSequence) {
     const new_env_frame = new EnvironmentFrame();
 
-    // Upsert each function's name and unassigned ValueAndType to the new frame.
+    // Upsert each declaration name and its unassigned ValueAndType to the new frame.
     [...expressionSeq.expressions]
-      .filter((expr: Expression) => is_function_definition(expr))
-      .map((funcdef: FunctionDefinition) => [
-        funcdef.name,
-        make_unassigned_callable_vnt(funcdef),
-      ])
-      .forEach(([name, vnt]: [string, FuncValAndType]) =>
-        new_env_frame.upsert_callable_name(name, vnt)
-      );
+      .filter((expr: Expression) => is_declaration(expr))
+      .forEach((def: FunctionDefinition | VariableDefinition) => {
+        const vnt = is_function_definition(def)
+          ? make_unassigned_callable_vnt(def)
+          : make_unassigned_noncallable_vnt(def);
 
-    // Upsert each non-function's name and unassigned ValueAndType to the new frame.
-    [...expressionSeq.expressions]
-      .filter((expr) => is_variable_definition(expr))
-      .map((vardef: VariableDefinition) => [
-        vardef.name,
-        make_unassigned_noncallable_vnt(vardef),
-      ])
-      .forEach(([name, vnt]: [string, VarValAndType]) =>
-        new_env_frame.upsert_noncallable_name_vnt(name, vnt)
-      );
+        is_function_definition(def)
+          ? new_env_frame.upsert_signature_vnt(def.name, vnt as FuncValAndType)
+          : new_env_frame.upsert_name_vnt(def.name, vnt as VarValAndType);
+      });
 
     // Add the frame into the environment stack.
     this.frames.push(new_env_frame);
@@ -76,24 +68,20 @@ export class Environment {
     // Traverse from the top of the stack frame
     for (let i = name.length - 1; i >= 0; i--) {
       const curr_frame = this.frames[i];
-      const vnt_map = curr_frame.noncallables_to_vnts;
-
-      if (name in vnt_map) {
-        return vnt_map[name];
+      if (curr_frame.is_name_exist(name)) {
+        return curr_frame.get_name_vnt(name).value;
       }
     }
     throw new Error("Looking up non-existing name!!"); // TODO: change to a better error msg
   }
 
-  lookup_signature(name: string, arg_types: string[]) {
+  lookup_function(name: string, arg_types: string[]) {
     // Traverse from the top of the stack frame
     for (let i = name.length - 1; i >= 0; i--) {
       const curr_frame = this.frames[i];
-      const vnt_map = curr_frame.noncallables_to_vnts;
+      const most_specific_func = curr_frame.lookup_signature(name, arg_types);
 
-      if (name in vnt_map) {
-        return vnt_map[name];
-      }
+      if (most_specific_func) return most_specific_func;
     }
     throw new Error("Looking up non-existing name!!"); // TODO: change to a better error msg
   }
@@ -104,7 +92,7 @@ export class Environment {
 
   update_name(name: string, value: Primitive) {
     const curr_frame = this.get_curr_frame();
-    curr_frame.update_name(name, value);
+    curr_frame.update_name_value(name, value);
   }
 
   update_signature(
@@ -113,64 +101,68 @@ export class Environment {
     value: ExpressionSequence
   ) {
     const curr_frame = this.get_curr_frame();
-    curr_frame.update_signature(name, param_types, value);
+    curr_frame.update_signature_value(name, param_types, value);
   }
 }
 
 class EnvironmentFrame {
-  noncallables_to_vnts: { [name: string]: VarValAndType };
-  callables_to_vnts: { [name: string]: FuncValAndType[] };
+  name_to_vnts: { [name: string]: VarValAndType };
+  signature_to_vnts: { [name: string]: FuncValAndType[] };
 
   constructor() {
-    this.noncallables_to_vnts = {};
-    this.callables_to_vnts = {};
+    this.name_to_vnts = {};
+    this.signature_to_vnts = {};
   }
 
   // Non-callables.
-  upsert_noncallable_name_vnt(name: string, vnt: VarValAndType) {
-    if (!this.is_upsert_noncallable_name_allowed(name, vnt))
+  upsert_name_vnt(name: string, vnt: VarValAndType) {
+    if (!this.is_name_declaration_allowed(name, vnt))
       throw new Error("Invalid declaration");
-    this.noncallables_to_vnts[name] = vnt;
+    this.name_to_vnts[name] = vnt;
   }
 
-  update_name(name: string, value: Primitive) {
-    this.noncallables_to_vnts[name].value = value;
+  update_name_value(name: string, value: Primitive) {
+    this.name_to_vnts[name].value = value;
   }
 
-  get_noncallable_vnt(name: string): VarValAndType {
-    return this.noncallables_to_vnts[name];
+  get_name_vnt(name: string): VarValAndType {
+    return this.name_to_vnts[name];
   }
 
-  is_upsert_noncallable_name_allowed(name: string, vnt: VarValAndType) {
+  is_name_declaration_allowed(name: string, vnt: VarValAndType) {
     return (
-      !(name in this.noncallables_to_vnts) ||
-      this.noncallables_to_vnts[name].type === "Any" ||
-      this.noncallables_to_vnts[name].type === vnt.type
+      !(name in this.name_to_vnts) || // Name doesn't exist yet.
+      this.name_to_vnts[name].type === "Any" || // Name exists, but type is "Any".
+      this.name_to_vnts[name].type === vnt.type // Name exists, type is same as previously declared.
     );
   }
 
-  lookup_noncallable_name(name: string) {
-    return this.noncallables_to_vnts[name];
+  lookup_name(name: string) {
+    return this.name_to_vnts[name];
+  }
+
+  is_name_exist(name: string) {
+    return name in this.name_to_vnts;
   }
 
   // Callables.
-  upsert_callable_name(name: string, vnt: FuncValAndType) {
-    if (!this.is_upsert_callable_name_allowed(name, vnt))
+  upsert_signature_vnt(signature: string, vnt: FuncValAndType) {
+    if (!this.is_signature_declaration_allowed(signature, vnt))
       throw new Error("Invalid declaration");
 
-    if (this.callables_to_vnts[name]) {
-      this.callables_to_vnts[name].push(vnt);
+    if (this.signature_to_vnts[signature]) {
+      this.signature_to_vnts[signature].push(vnt);
     } else {
-      this.callables_to_vnts[name] = [vnt];
+      this.signature_to_vnts[signature] = [vnt];
     }
   }
 
-  update_signature(
+  update_signature_value(
     name: string,
     param_types: string[],
     value: ExpressionSequence
   ) {
-    const matched_vnt = this.callables_to_vnts[name].filter((vnt) =>
+    const matched_vnt = this.signature_to_vnts[name].filter((vnt) =>
       _.isEqual(vnt.type.param_types, param_types)
     );
 
@@ -180,13 +172,14 @@ class EnvironmentFrame {
     matched_vnt[0].value = value;
   }
 
-  get_callable_vnts(name: string): FuncValAndType[] {
-    return this.callables_to_vnts[name];
+  get_signature_vnts(name: string): FuncValAndType[] {
+    return this.signature_to_vnts[name];
   }
 
-  is_upsert_callable_name_allowed(name: string, vnt: FuncValAndType) {
+  is_signature_declaration_allowed(name: string, vnt: FuncValAndType) {
+    // Only allowed if there is no existing function with same name and parameter types.
     return (
-      Object.values(this.callables_to_vnts[name]).filter((existing_vnt) =>
+      Object.values(this.signature_to_vnts[name]).filter((existing_vnt) =>
         _.isEqual(existing_vnt, vnt)
       ).length === 0
     );
@@ -194,7 +187,7 @@ class EnvironmentFrame {
 
   lookup_signature(name: string, arg_types: string[]) {
     // Functions with same name and same parameter length.
-    const overloaded_funcs = this.callables_to_vnts[name].filter(
+    const overloaded_funcs = this.signature_to_vnts[name].filter(
       (vnt) => vnt.type.param_types.length === arg_types.length
     );
 

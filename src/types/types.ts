@@ -145,5 +145,7 @@ export const is_function_definition = (
   node: Node
 ): node is FunctionDefinition => node?.type === "FunctionDefinition";
 
-export const is_declaration = (node: Node): boolean =>
+export const is_declaration = (
+  node: Node
+): node is VariableDefinition | FunctionDefinition =>
   is_variable_definition(node) || is_function_definition(node);

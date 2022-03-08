@@ -9,7 +9,7 @@ const LIST_OF_BUILT_IN_TYPES_WITH_THEIR_PARENTS: [string, string][] = [
   ["Int64", "Signed"],
 ];
 
-class TypeGraph {
+export class TypeGraph {
   root: TypeNode;
   node_map: Object;
 
