@@ -1,3 +1,5 @@
+import { EnvStack } from "../environment/environment";
+
 export type Node =
   | Program
   | ExpressionSequence
@@ -114,7 +116,6 @@ export interface AbstractTypeDeclaration {
   super_type_name: string | null;
 }
 
-export type EnvStack = EnvFrame[];
 export interface EnvFrame {
   [name: string]: ValAndType[];
 }
@@ -129,7 +130,9 @@ export interface VarValAndType {
 export interface FuncValAndType {
   value: ExpressionSequence | null;
   param_types: string[];
+  param_names: string[];
   return_type: string | null;
+  env_stack: EnvStack;
 }
 
 // Type guards
