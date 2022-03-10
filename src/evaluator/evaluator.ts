@@ -15,16 +15,17 @@ import {
   AbstractTypeDeclaration,
   ValAndType,
   is_primitive,
+  is_declaration,
 } from "./../types/types";
 import * as _ from "lodash";
-import { Environment } from "../environment/environment";
 import { TypeGraph } from "../type_graph/type_graph";
+import { EnvStack } from "../environment/environment";
 
 const ANY = "Any";
 const RETURN_VALUE_TAG = "return_value";
 
 const type_graph = new TypeGraph();
-const env = new Environment(type_graph);
+const env = new EnvStack();
 
 export const evaluate = (node: Node): Primitive | Object | void => {
   switch (node?.type) {
@@ -50,10 +51,16 @@ export const evaluate = (node: Node): Primitive | Object | void => {
   }
 };
 
+const scan_out_names = (node: ExpressionSequence) => {
+  return node.expressions
+    .filter((expr) => is_declaration(expr))
+    .map((expr: FunctionDefinition | VariableDefinition) => expr.name);
+};
+
 // Expressions.
 const evaluate_sequence = (node: ExpressionSequence) => {
   // Extend environment.
-  env.extend_env(node);
+  env.extend(scan_out_names(node));
 
   // Evaluate expressions.
   const expressions = node.expressions;
@@ -67,6 +74,9 @@ const evaluate_sequence = (node: ExpressionSequence) => {
     }
   }
   return last_evaluated_expr;
+
+  // Pop environment.
+  env.pop();
 };
 
 const evaluate_number_literal = (node: NumberLiteral): number => {
@@ -90,15 +100,16 @@ const evaluate_name = (node: Name): Primitive | Object => {
 // Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
   const eval_result = evaluate(node.expr);
-  env.update_name(node.name, eval_result!);
+  env.assign_name(node.name, eval_result!, node.atype ?? ANY);
 };
 
 // Function definition.
 const evaluate_function_definition = (node: FunctionDefinition) => {
-  env.update_signature(
+  env.assign_fname(
     node.name,
+    node.body,
     node.params.map((param) => param.atype ?? ANY),
-    node.body
+    node.return_type ?? ANY
   );
 };
 

@@ -114,8 +114,8 @@ export interface AbstractTypeDeclaration {
   super_type_name: string | null;
 }
 
-export type Environment = EnvironmentFrame[];
-export interface EnvironmentFrame {
+export type EnvStack = EnvFrame[];
+export interface EnvFrame {
   [name: string]: ValAndType[];
 }
 
@@ -128,10 +128,8 @@ export interface VarValAndType {
 
 export interface FuncValAndType {
   value: ExpressionSequence | null;
-  type: {
-    param_types: string[];
-    return_type: string | null;
-  };
+  param_types: string[];
+  return_type: string | null;
 }
 
 // Type guards
