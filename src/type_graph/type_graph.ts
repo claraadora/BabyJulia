@@ -44,13 +44,15 @@ export class TypeGraph {
     }
 
     if (!(parent_name in this.node_map)) {
-      console.log(this.node_map);
       throw new Error("Parent type does not exist in the graph");
     }
 
     let parent_node = this.get_node(parent_name ?? "Any");
     let new_node = new TypeNode(node_name, parent_node);
+
     parent_node.children.add(new_node);
+    new_node.parent = parent_node;
+
     this.node_map[node_name] = new_node;
   }
 
