@@ -126,8 +126,6 @@ const evaluate_name = (node: Name): Primitive | Object => {
 
 // TODO: add field access here.
 
-// Function application.
-
 // Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
   const eval_result = evaluate(node.expr);
@@ -164,6 +162,7 @@ function get_evaluated_return_value(
   return evaluated_return_statement[1];
 }
 
+// Function Application
 function get_specificity_score(arg_types: string[], param_types: string[]) {
   let specificity_score = 0;
   for (let i = 0; i < param_types.length; i++) {
@@ -181,9 +180,11 @@ function get_most_specific_function(
   const func_scores = funcs
     .map((func: FuncValAndType) => func.param_types)
     .map((param_types) => get_specificity_score(arg_types, param_types))
-    .map((score) => (score < 0 ? Number.MAX_VALUE : score));
+    .map((score) => (score < 0 ? Number.MAX_VALUE : score)); // Mark the functions that do not match.
 
   const min_score = Math.min(...func_scores);
+
+  if (min_score === Number.MAX_VALUE) throw new Error("No function found");
 
   // Check if there are more than one "most" specific functions.
   const score_count = _.countBy(func_scores);
@@ -195,7 +196,6 @@ function get_most_specific_function(
   return funcs[most_specific_func_idx];
 }
 
-// TODO: add function application here
 function apply(name: string, arg_vals: (Primitive | Object)[]) {
   // Get the most specific function.
   const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));

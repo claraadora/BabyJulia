@@ -63,11 +63,11 @@ export class TypeGraph {
 
     let ptr: TypeNode | null = child_node;
     let distance = 0;
-    while (ptr && child_node !== parent_node) {
+    while (ptr && ptr !== parent_node) {
       ptr = ptr.parent;
       distance++;
     }
-    return child_node === parent_node ? distance : -1;
+    return ptr === parent_node ? distance : -1;
   }
 }
 
