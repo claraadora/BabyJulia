@@ -73,10 +73,11 @@ const evaluate_sequence = (node: ExpressionSequence) => {
       return get_evaluated_return_value(last_evaluated_expr);
     }
   }
-  return last_evaluated_expr;
 
   // Pop environment.
   env.pop();
+
+  return last_evaluated_expr;
 };
 
 const evaluate_number_literal = (node: NumberLiteral): number => {
