@@ -18,6 +18,7 @@ import {
   StringContext,
   BooleanContext,
   ReturnStatementContext,
+  PrintExpressionContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -51,6 +52,7 @@ import {
   AbstractTypeDeclaration,
   Primitive,
   ReturnStatement,
+  PrintExpression,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -220,6 +222,14 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       type: "AbstractTypeDeclaration",
       name: ctx._type.text!,
       super_type_name: ctx._supertype?.text ?? null,
+    };
+  }
+
+  // Print Expression
+  visitPrintExpression(ctx: PrintExpressionContext): PrintExpression {
+    return {
+      type: "PrintExpression",
+      expr: (ctx.printExpr().expr()?.accept(this) as Expression) ?? null,
     };
   }
 

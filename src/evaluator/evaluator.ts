@@ -54,6 +54,8 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return evaluate_abstract_type_declaration(node);
     case "ReturnStatement":
       return evaluate_return_statement(node);
+    case "PrintExpression":
+      return console.log(evaluate(node.expr));
     default:
   }
 };

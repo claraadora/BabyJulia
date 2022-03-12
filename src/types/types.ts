@@ -31,7 +31,8 @@ export type Expression =
   | NumberLiteral
   | StringLiteral
   | BooleanLiteral
-  | Name;
+  | Name
+  | PrintExpression;
 
 export interface NumberLiteral {
   type: "NumberLiteral";
@@ -114,6 +115,12 @@ export interface AbstractTypeDeclaration {
   type: "AbstractTypeDeclaration";
   name: string;
   super_type_name: string | null;
+}
+
+// Print stmt
+export interface PrintExpression {
+  type: "PrintExpression";
+  expr: Expression;
 }
 
 export interface EnvFrame {

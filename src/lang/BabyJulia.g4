@@ -12,6 +12,7 @@ expr:
 	| absTypeDeclr	# AbstractTypeDeclaration
 	| identifier	# Name
 	| returnStmt	# ReturnStatement
+	| printExpr		# PrintExpression
 	| NUMBER		# Number
 	| STRING		# String
 	| BOOL			# Boolean;
@@ -51,6 +52,8 @@ fldAccess: objName = NAME '.' fieldName = NAME;
 
 // 7. Identifier
 identifier: NAME;
+
+printExpr: 'println' '(' expr ')';
 
 // Lexer rules
 NUMBER: [0-9]+;
