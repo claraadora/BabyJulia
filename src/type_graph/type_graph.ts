@@ -9,7 +9,7 @@ const LIST_OF_BUILT_IN_TYPES_WITH_THEIR_PARENTS: [string, string][] = [
   ["Int64", "Signed"],
 ];
 
-class TypeGraph {
+export class TypeGraph {
   root: TypeNode;
   node_map: Object;
 
@@ -49,7 +49,11 @@ class TypeGraph {
 
     let parent_node = this.get_node(parent_name ?? "Any");
     let new_node = new TypeNode(node_name, parent_node);
+
     parent_node.children.add(new_node);
+    new_node.parent = parent_node;
+
+    this.node_map[node_name] = new_node;
   }
 
   // Get distance from child node to parent node by traversing up the graph. If unreachable, -1 is returned.
@@ -59,11 +63,11 @@ class TypeGraph {
 
     let ptr: TypeNode | null = child_node;
     let distance = 0;
-    while (ptr && child_node !== parent_node) {
+    while (ptr && ptr !== parent_node) {
       ptr = ptr.parent;
       distance++;
     }
-    return child_node === parent_node ? distance : -1;
+    return ptr === parent_node ? distance : -1;
   }
 }
 

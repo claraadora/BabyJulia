@@ -1,3 +1,5 @@
+import { EnvStack } from "../environment/environment";
+
 export type Node =
   | Program
   | ExpressionSequence
@@ -114,21 +116,37 @@ export interface AbstractTypeDeclaration {
   super_type_name: string | null;
 }
 
-export interface Environment {
+export interface EnvFrame {
   [name: string]: ValAndType[];
 }
 
 export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
-  value: Primitive | Object;
+  value: Primitive | Object | null;
   type: string;
 }
 
 export interface FuncValAndType {
   value: ExpressionSequence | null;
-  type: {
-    param_types: string[];
-    return_type: string | null;
-  };
+  param_types: string[];
+  param_names: string[];
+  return_type: string | null;
+  env_stack: EnvStack;
 }
+
+// Type guards
+export const is_primitive = (value: any): boolean => Object(value) !== value;
+
+export const is_variable_definition = (
+  node: Node
+): node is VariableDefinition => node?.type === "VariableDefinition";
+
+export const is_function_definition = (
+  node: Node
+): node is FunctionDefinition => node?.type === "FunctionDefinition";
+
+export const is_declaration = (
+  node: Node
+): node is VariableDefinition | FunctionDefinition =>
+  is_variable_definition(node) || is_function_definition(node);
