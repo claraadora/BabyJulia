@@ -21,7 +21,7 @@ import {
 import * as _ from "lodash";
 
 const global_env: Environment = {};
-const type_graph: TypeGraph = new TypeGraph();
+// const type_graph: TypeGraph = new TypeGraph();
 const ANY = "any";
 
 const isPrimitive = (value: any): boolean => Object(value) !== value;
@@ -88,6 +88,17 @@ const evaluate_name = (node: Name): Primitive | Object => {
 
 // Field access.
 const evaluate_field_access = (node: FieldAccess): Primitive => {
+  // dummy example
+  const myCar = new Object();
+  myCar["make"] = "Ford";
+  myCar["model"] = true;
+  myCar["year"] = 1969;
+  const dummy: VarValAndType = {
+    value: myCar,
+    type: "Object",
+  };
+  global_env["myCar"] = [dummy];
+
   if (!(node.objName in global_env)) {
     throw new Error(
       '"' +
@@ -228,5 +239,5 @@ const evaluate_struct_definition = (node: StructDefinition) => {
 
 // Abstract type declaration.
 const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
-  type_graph.add_node(node.name, node.super_type_name ?? ANY);
+  // type_graph.add_node(node.name, node.super_type_name ?? ANY);
 };

@@ -1,0 +1,3 @@
+brand = myCar.year
+brand
+
