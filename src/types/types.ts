@@ -98,7 +98,7 @@ export interface FunctionApplication {
 // Struct
 export interface StructDefinition {
   type: "StructDefinition";
-  struct_name: string;
+  name: string;
   super_type_name: string | null;
   fields: StructField[];
 }
@@ -128,7 +128,7 @@ export interface VarValAndType {
 }
 
 export interface FuncValAndType {
-  value: ExpressionSequence | null;
+  value: ExpressionSequence | null | Function;
   param_types: string[];
   param_names: string[];
   return_type: string | null;
@@ -146,7 +146,12 @@ export const is_function_definition = (
   node: Node
 ): node is FunctionDefinition => node?.type === "FunctionDefinition";
 
+export const is_struct_definition = (node: Node): node is StructDefinition =>
+  node?.type === "StructDefinition";
+
 export const is_declaration = (
   node: Node
-): node is VariableDefinition | FunctionDefinition =>
-  is_variable_definition(node) || is_function_definition(node);
+): node is VariableDefinition | FunctionDefinition | StructDefinition =>
+  is_variable_definition(node) ||
+  is_function_definition(node) ||
+  is_struct_definition(node);
