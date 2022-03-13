@@ -19,6 +19,7 @@ import {
   BooleanContext,
   ReturnStatementContext,
   PrintExpressionContext,
+  PowerContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -53,6 +54,7 @@ import {
   Primitive,
   ReturnStatement,
   PrintExpression,
+  BinaryExpression,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -230,6 +232,20 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "PrintExpression",
       expr: (ctx.printExpr().expr()?.accept(this) as Expression) ?? null,
+    };
+  }
+  
+  // Binary Expression
+  visitPower(temp_ctx: PowerContext): BinaryExpression {
+    // for (let i = 0; i < (args_ctx ? args_ctx.childCount : 0); i++) {
+    //   args.push(args_ctx?.getChild(i).accept(this) as Expression);
+    // }
+
+    return {
+      type: "BinaryExpression",
+      operator: "^",
+      left: this.visit(temp_ctx._left),
+      right: this.visit(temp_ctx._right),
     };
   }
 

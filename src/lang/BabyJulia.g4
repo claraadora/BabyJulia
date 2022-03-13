@@ -13,9 +13,9 @@ expr:
 	| identifier	# Name
 	| returnStmt	# ReturnStatement
 	| printExpr		# PrintExpression
-	| NUMBER		# Number
 	| STRING		# String
-	| BOOL			# Boolean;
+	| BOOL			# Boolean
+	| binaryExpr	# BinaryExpression;
 
 // 1. Variable Definition
 varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
@@ -53,7 +53,19 @@ fldAccess: objName = NAME '.' fieldName = NAME;
 // 7. Identifier
 identifier: NAME;
 
+// Print Expression
 printExpr: 'println' '(' expr ')';
+
+// Binary Expression
+binaryExpr
+   : NUMBER                                         # Number
+   | '(' inner=binaryExpr ')'                       # Parentheses
+   | left=binaryExpr operator=POW right=binaryExpr  # Power
+   | left=binaryExpr operator=MUL right=binaryExpr  # Multiplication
+   | left=binaryExpr operator=DIV right=binaryExpr  # Division
+   | left=binaryExpr operator=ADD right=binaryExpr  # Addition
+   | left=binaryExpr operator=SUB right=binaryExpr  # Subtraction
+   ;
 
 // Lexer rules
 NUMBER: [0-9]+;
@@ -66,6 +78,7 @@ MUL: '*';
 DIV: '/';
 ADD: '+';
 SUB: '-';
+POW: '^';
 
 // others
 NAME: ('a' ..'z' | 'A' ..'Z' | '_') (

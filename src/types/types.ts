@@ -142,6 +142,13 @@ export interface FuncValAndType {
   env_stack: EnvStack;
 }
 
+export interface BinaryExpression {
+  type: "BinaryExpression",
+  operator: string,
+  left: number,
+  right: number,
+}
+
 // Type guards
 export const is_primitive = (value: any): boolean => Object(value) !== value;
 
