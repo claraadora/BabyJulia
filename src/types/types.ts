@@ -144,10 +144,10 @@ export interface FuncValAndType {
 }
 
 export interface BinaryExpression {
-  type: "BinaryExpression",
-  operator: string,
-  left: Expression,
-  right: Expression,
+  type: "BinaryExpression";
+  operator: string;
+  left: Expression;
+  right: Expression;
 }
 
 // Type guards
@@ -170,3 +170,6 @@ export const is_declaration = (
   is_variable_definition(node) ||
   is_function_definition(node) ||
   is_struct_definition(node);
+
+export const is_number = (value: any): value is number =>
+  typeof value === typeof 1;

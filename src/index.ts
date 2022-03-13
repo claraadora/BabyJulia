@@ -25,10 +25,10 @@ function main() {
 
   const parsed_program = parse(program);
   sanitize(parsed_program);
-  
+
   try {
     const evaluated_program = evaluate(parsed_program);
-    console.log("evaluated_program:", evaluated_program);
+    console.log("BabyJulia >", evaluated_program);
   } catch (err) {
     console.log(err.message);
   }

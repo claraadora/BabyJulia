@@ -22,7 +22,7 @@ import {
   ParenthesesContext,
   PowerContext,
   MultDivContext,
-  AddSubContext
+  AddSubContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";

@@ -21,6 +21,7 @@ import {
   StructField,
   FieldAccess,
   BinaryExpression,
+  is_number,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -298,20 +299,24 @@ const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
 
 // Binary expression.
 const evaluate_binary_expression = (node: BinaryExpression): number => {
-  const left = evaluate(node.left) as number;
-  const right = evaluate(node.right) as number;
+  const left = evaluate(node.left);
+  const right = evaluate(node.right);
+
+  if (!is_number(left) || !is_number(right)) {
+    throw new Error("Invalid binary expression operand type(s)");
+  }
 
   switch (node.operator) {
-    case '+':
-      return left + right
-    case '-':
-      return left - right
-    case '*':
-      return left * right
-    case '/':
-      return left / right
-    case '^':
-      return Math.pow(left, right)
+    case "+":
+      return left + right;
+    case "-":
+      return left - right;
+    case "*":
+      return left * right;
+    case "/":
+      return left / right;
+    case "^":
+      return Math.pow(left, right);
     default:
       throw new Error("Invalid binary expression!");
   }
