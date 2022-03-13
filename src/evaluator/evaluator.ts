@@ -20,6 +20,7 @@ import {
   StructDefinition,
   StructField,
   FieldAccess,
+  BinaryExpression,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -65,6 +66,8 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return evaluate_return_statement(node);
     case "PrintExpression":
       return console.log(evaluate(node.expr));
+    case "BinaryExpression":
+      return evaluate_binary_expression(node);
     default:
   }
 };
@@ -291,4 +294,20 @@ function evaluate_field_access(node: FieldAccess) {
 // Abstract type declaration.
 const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
   type_graph.add_node(node.name, node.super_type_name ?? ANY);
+};
+
+// Binary expression.
+const evaluate_binary_expression = (node: BinaryExpression): number => {
+  const left = evaluate(node.left) as number;
+  const right = evaluate(node.right) as number;
+  // switch case
+  return node.operator == "^" 
+    ? Math.pow(left, right)
+    : node.operator == "*"
+    ? left * right
+    : node.operator == "/"
+    ? left / right
+    : node.operator == "+"
+    ? left + right
+    : left - right;
 };

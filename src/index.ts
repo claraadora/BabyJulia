@@ -4,7 +4,7 @@ import { argv } from "process";
 import { evaluate } from "./evaluator/evaluator";
 import * as _ from "lodash";
 import { isObject } from "lodash";
-import { Expression, ExpressionSequence } from "./types/types";
+import { Expression, ExpressionSequence, Program } from "./types/types";
 
 function sanitize(node: any) {
   if (!_.isObject(node)) {
@@ -27,6 +27,8 @@ function main() {
 
   const parsed_program = parse(program);
   sanitize(parsed_program);
+  // TODO: delete
+  console.log("parsed_program:", (parsed_program as Program).expressions);
 
   try {
     const evaluated_program = evaluate(parsed_program);
@@ -36,3 +38,4 @@ function main() {
   }
 }
 main();
+

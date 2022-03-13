@@ -32,7 +32,8 @@ export type Expression =
   | StringLiteral
   | BooleanLiteral
   | Name
-  | PrintExpression;
+  | PrintExpression
+  | BinaryExpression;
 
 export interface NumberLiteral {
   type: "NumberLiteral";
@@ -145,8 +146,8 @@ export interface FuncValAndType {
 export interface BinaryExpression {
   type: "BinaryExpression",
   operator: string,
-  left: number,
-  right: number,
+  left: Expression,
+  right: Expression,
 }
 
 // Type guards
