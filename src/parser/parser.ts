@@ -19,6 +19,10 @@ import {
   BooleanContext,
   ReturnStatementContext,
   PrintExpressionContext,
+  ParenthesesContext,
+  PowerContext,
+  MultDivContext,
+  AddSubContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -50,7 +54,6 @@ import {
   StructDefinition,
   StructField,
   AbstractTypeDeclaration,
-  Primitive,
   ReturnStatement,
   PrintExpression,
 } from "./../types/types";
@@ -230,6 +233,38 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "PrintExpression",
       expr: (ctx.printExpr().expr()?.accept(this) as Expression) ?? null,
+    };
+  }
+
+  // Binary Expression
+  visitParentheses(ctx: ParenthesesContext): Expression {
+    return this.visit(ctx._inner) as Expression;
+  }
+
+  visitPower(ctx: PowerContext): Expression {
+    return {
+      type: "BinaryExpression",
+      operator: "^",
+      left: this.visit(ctx._left) as Expression,
+      right: this.visit(ctx._right) as Expression,
+    };
+  }
+
+  visitMultDiv(ctx: MultDivContext): Expression {
+    return {
+      type: "BinaryExpression",
+      operator: ctx._operator.text!,
+      left: this.visit(ctx._left) as Expression,
+      right: this.visit(ctx._right) as Expression,
+    };
+  }
+
+  visitAddSub(ctx: AddSubContext): Expression {
+    return {
+      type: "BinaryExpression",
+      operator: ctx._operator.text!,
+      left: this.visit(ctx._left) as Expression,
+      right: this.visit(ctx._right) as Expression,
     };
   }
 

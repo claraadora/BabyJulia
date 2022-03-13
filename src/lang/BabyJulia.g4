@@ -4,18 +4,22 @@ grammar BabyJulia;
 program: exprSequence EOF;
 exprSequence: (expr (NEWLINE)* | NEWLINE)*;
 expr:
-	varDef			# VarDefinition
-	| funcDef		# FuncDefinition
-	| funcApp		# FuncApplication
-	| structDef		# StructDefinition
-	| fldAccess		# FieldAccess
-	| absTypeDeclr	# AbstractTypeDeclaration
-	| identifier	# Name
-	| returnStmt	# ReturnStatement
-	| printExpr		# PrintExpression
-	| NUMBER		# Number
-	| STRING		# String
-	| BOOL			# Boolean;
+	varDef														# VarDefinition
+	| funcDef													# FuncDefinition
+	| funcApp													# FuncApplication
+	| structDef													# StructDefinition
+	| fldAccess													# FieldAccess
+	| absTypeDeclr												# AbstractTypeDeclaration
+	| identifier												# Name
+	| returnStmt												# ReturnStatement
+	| printExpr													# PrintExpression
+	| <assoc = right> left = expr operator = POW right = expr	# Power
+	| left = expr operator = (MUL | DIV) right = expr			# MultDiv
+	| left = expr operator = (ADD | SUB) right = expr			# AddSub
+	| NUMBER													# Number
+	| '(' inner = expr ')'										# Parentheses
+	| STRING													# String
+	| BOOL														# Boolean;
 
 // 1. Variable Definition
 varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
@@ -53,21 +57,20 @@ fldAccess: objName = NAME '.' fieldName = NAME;
 // 7. Identifier
 identifier: NAME;
 
+// Print Expression
 printExpr: 'println' '(' expr ')';
 
-// Lexer rules
-NUMBER: [0-9]+;
-STRING: '"' ( ~["\n\r] | '\\"')* '"';
-BOOL: 'true' | 'false';
-
-// operations
-BIN_OP: MUL | DIV | ADD | SUB;
+// Lexer rules bin ops
+POW: '^';
 MUL: '*';
 DIV: '/';
 ADD: '+';
 SUB: '-';
 
-// others
+NUMBER: [0-9]+;
+BOOL: 'true' | 'false';
+STRING: '"' ( ~["\n\r] | '\\"')* '"';
+
 NAME: ('a' ..'z' | 'A' ..'Z' | '_') (
 		'a' ..'z'
 		| 'A' ..'Z'

@@ -3,8 +3,6 @@ import * as fs from "fs";
 import { argv } from "process";
 import { evaluate } from "./evaluator/evaluator";
 import * as _ from "lodash";
-import { isObject } from "lodash";
-import { Expression, ExpressionSequence } from "./types/types";
 
 function sanitize(node: any) {
   if (!_.isObject(node)) {
@@ -30,7 +28,7 @@ function main() {
 
   try {
     const evaluated_program = evaluate(parsed_program);
-    console.log("evaluated_program:", evaluated_program);
+    console.log("BabyJulia >", evaluated_program);
   } catch (err) {
     console.log(err.message);
   }
