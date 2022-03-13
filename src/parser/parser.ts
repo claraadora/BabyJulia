@@ -19,14 +19,10 @@ import {
   BooleanContext,
   ReturnStatementContext,
   PrintExpressionContext,
-  BinaryExpressionContext,
-  BinaryExprContext,
   ParenthesesContext,
   PowerContext,
-  MultiplicationContext,
-  DivisionContext,
-  AdditionContext,
-  SubtractionContext,
+  MultDivContext,
+  AddSubContext
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -58,12 +54,9 @@ import {
   StructDefinition,
   StructField,
   AbstractTypeDeclaration,
-  Primitive,
   ReturnStatement,
   PrintExpression,
-  BinaryExpression,
 } from "./../types/types";
-import { createTextChangeRange, isTypeOperatorNode } from "typescript";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
   // Expressions
@@ -244,16 +237,8 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 
   // Binary Expression
-  visitBinaryExpression(temp_ctx: BinaryExpressionContext): Expression {
-    return temp_ctx.binaryExpr().accept(this) as Expression;
-  }
-
-  visitBinaryExpr(ctx: BinaryExprContext): Expression {
-    return ctx.getChild(0).accept(this) as Expression;
-  }
-
-  visitParantheses(ctx: ParenthesesContext): Expression {
-    return this.visitBinaryExpr(ctx._inner);
+  visitParentheses(ctx: ParenthesesContext): Expression {
+    return this.visit(ctx._inner) as Expression;
   }
 
   visitPower(ctx: PowerContext): Expression {
@@ -265,37 +250,19 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     };
   }
 
-  visitMultiplication(ctx: MultiplicationContext): Expression {
+  visitMultDiv(ctx: MultDivContext): Expression {
     return {
       type: "BinaryExpression",
-      operator: "*",
+      operator: ctx._operator.text!,
       left: this.visit(ctx._left) as Expression,
       right: this.visit(ctx._right) as Expression,
     };
   }
 
-  visitDivision(ctx: DivisionContext): Expression {
+  visitAddSub(ctx: AddSubContext): Expression {
     return {
       type: "BinaryExpression",
-      operator: "/",
-      left: this.visit(ctx._left) as Expression,
-      right: this.visit(ctx._right) as Expression,
-    };
-  }
-
-  visitAddition(ctx: AdditionContext): Expression {
-    return {
-      type: "BinaryExpression",
-      operator: "+",
-      left: this.visit(ctx._left) as Expression,
-      right: this.visit(ctx._right) as Expression,
-    };
-  }
-
-  visitSubtraction(ctx: SubtractionContext): Expression {
-    return {
-      type: "BinaryExpression",
-      operator: "-",
+      operator: ctx._operator.text!,
       left: this.visit(ctx._left) as Expression,
       right: this.visit(ctx._right) as Expression,
     };
@@ -332,4 +299,3 @@ export function parse(source: string) {
   const converted = convertSource(tree);
   return converted;
 }
-

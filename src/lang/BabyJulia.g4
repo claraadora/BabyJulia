@@ -13,19 +13,13 @@ expr:
 	| identifier	# Name
 	| returnStmt	# ReturnStatement
 	| printExpr		# PrintExpression
+	| <assoc=right> left = expr operator = POW right = expr   	# Power
+	| left = expr operator = (MUL| DIV) right = expr			# MultDiv
+	| left = expr operator = (ADD | SUB) right = expr			# AddSub
+	|	NUMBER													# Number
+	| '(' inner = expr ')'										# Parentheses
 	| STRING		# String
 	| BOOL			# Boolean
-	| binaryExpr	# BinaryExpression;
-
-// Binary Expression
-binaryExpr:
-	NUMBER													# Number
-	| '(' inner = binaryExpr ')'							# Parentheses
-	| left = binaryExpr operator = MUL right = binaryExpr	# Multiplication
-	| left = binaryExpr operator = POW right = binaryExpr	# Power
-	| left = binaryExpr operator = DIV right = binaryExpr   # Division
-	| left = binaryExpr operator = ADD right = binaryExpr   # Addition
-	| left = binaryExpr operator = SUB right = binaryExpr   # Subtraction
 ;
 
 // 1. Variable Definition
@@ -68,17 +62,14 @@ identifier: NAME;
 printExpr: 'println' '(' expr ')';
 
 // Lexer rules
-NUMBER: [0-9]+;
-STRING: '"' ( ~["\n\r] | '\\"')* '"';
-BOOL: 'true' | 'false';
-
-// operations
-BIN_OP: MUL | DIV | ADD | SUB;
+POW: '^';
 MUL: '*';
 DIV: '/';
 ADD: '+';
 SUB: '-';
-POW: '^';
+NUMBER: [0-9]+;
+STRING: '"' ( ~["\n\r] | '\\"')* '"';
+BOOL: 'true' | 'false';
 
 // others
 NAME: ('a' ..'z' | 'A' ..'Z' | '_') (

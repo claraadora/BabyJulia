@@ -300,14 +300,19 @@ const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
 const evaluate_binary_expression = (node: BinaryExpression): number => {
   const left = evaluate(node.left) as number;
   const right = evaluate(node.right) as number;
-  // switch case
-  return node.operator == "^" 
-    ? Math.pow(left, right)
-    : node.operator == "*"
-    ? left * right
-    : node.operator == "/"
-    ? left / right
-    : node.operator == "+"
-    ? left + right
-    : left - right;
+
+  switch (node.operator) {
+    case '+':
+      return left + right
+    case '-':
+      return left - right
+    case '*':
+      return left * right
+    case '/':
+      return left / right
+    case '^':
+      return Math.pow(left, right)
+    default:
+      throw new Error("Invalid binary expression!");
+  }
 };
