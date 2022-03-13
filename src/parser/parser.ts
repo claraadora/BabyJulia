@@ -199,7 +199,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
     return {
       type: "StructDefinition",
-      struct_name: ctx._structName.text!,
+      name: ctx._structName.text!,
       super_type_name: ctx._supertype?.text ?? null,
       fields,
     };

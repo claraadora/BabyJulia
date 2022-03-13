@@ -17,6 +17,9 @@ import {
   is_primitive,
   is_declaration,
   Expression,
+  StructDefinition,
+  StructField,
+  FieldAccess,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -49,7 +52,13 @@ export const evaluate = (node: Node): Primitive | Object | void => {
     case "FunctionDefinition":
       return evaluate_function_definition(node);
     case "FunctionApplication":
-      return apply(node.name, list_of_values(node.args));
+      return is_constructor_function(node.name)
+        ? construct(node.name, list_of_values(node.args))
+        : apply(node.name, list_of_values(node.args));
+    case "StructDefinition":
+      return evaluate_struct_definition(node);
+    case "FieldAccess":
+      return evaluate_field_access(node);
     case "AbstractTypeDeclaration":
       return evaluate_abstract_type_declaration(node);
     case "ReturnStatement":
@@ -63,7 +72,10 @@ export const evaluate = (node: Node): Primitive | Object | void => {
 const scan_out_names = (node: ExpressionSequence) => {
   return node.expressions
     .filter((expr) => is_declaration(expr))
-    .map((expr: FunctionDefinition | VariableDefinition) => expr.name);
+    .map(
+      (expr: FunctionDefinition | VariableDefinition | StructDefinition) =>
+        expr.name
+    );
 };
 
 const list_of_values = (expressions: Expression[]): (Primitive | Object)[] => {
@@ -125,8 +137,6 @@ const evaluate_boolean_literal = (node: BooleanLiteral): boolean => {
 const evaluate_name = (node: Name): Primitive | Object => {
   return env.lookup_name(node.name).value as Primitive | Object;
 };
-
-// TODO: add field access here.
 
 // Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
@@ -198,6 +208,29 @@ function get_most_specific_function(
   return funcs[most_specific_func_idx];
 }
 
+function is_constructor_function(name: string) {
+  return name in type_graph.node_map;
+}
+
+function construct(name: string, arg_vals: (Primitive | Object)[]) {
+  const funcValAndType = env.lookup_fnames(name)[0];
+  const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
+
+  const invalid_arg_types = arg_types.filter(
+    (arg_type, idx) =>
+      type_graph.get_distance_from(
+        arg_type,
+        funcValAndType.param_types[idx]
+      ) === -1 // can't find path from arg type to param type
+  );
+
+  if (invalid_arg_types.length > 0)
+    throw new Error("Invalid arguments to constructor!");
+
+  const func = funcValAndType.value as Function;
+  return func(...arg_vals);
+}
+
 function apply(name: string, arg_vals: (Primitive | Object)[]) {
   // Get the most specific function.
   const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
@@ -223,7 +256,37 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
   env = env_to_restore;
   return eval_result;
 }
-// TODO: add struct definition here
+
+function make_constructor_function(fields: StructField[]) {
+  const field_names = fields.map((field) => field.name);
+  const field_names_string = field_names.join(",");
+  return new Function(...field_names, `return {${field_names_string}}`);
+}
+
+// Struct definition.
+function evaluate_struct_definition(node: StructDefinition) {
+  // Add to type graph.
+  type_graph.add_node(node.name, node.super_type_name ?? ANY);
+
+  // Create and add constructor function.
+  const constructor_func = make_constructor_function(node.fields);
+  const param_types = node.fields.map((field) => field.atype ?? ANY);
+  const param_names = node.fields.map((field) => field.name);
+  env.assign_fname(
+    node.name,
+    constructor_func,
+    param_types,
+    param_names,
+    node.name,
+    env.clone()
+  );
+}
+
+// Field access.
+function evaluate_field_access(node: FieldAccess) {
+  const obj = env.lookup_name(node.objName).value as Object;
+  return obj[node.fieldName];
+}
 
 // Abstract type declaration.
 const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
