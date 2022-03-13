@@ -23,7 +23,10 @@
   },
   "scripts": {
     "antlr4ts": "antlr4ts -visitor ./src/lang/BabyJulia.g4",
+    "a": "antlr4ts -visitor ./src/lang/BabyJulia.g4",
     "build": "tsc",
-    "eval": "node dist/index.js {0}"
+    "b": "tsc",
+    "eval": "node dist/index.js {0}",
+    "e": "node dist/index.js {0}"
   }
 }
