@@ -24,6 +24,7 @@ import {
   is_number,
   Arr,
   IndexAccess,
+  Value,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -329,7 +330,7 @@ const evaluate_binary_expression = (node: BinaryExpression): number => {
 };
 
 // Array
-const evaluate_array = (node: Arr): Array<Primitive> | Array<Array<Primitive>> => {
+const evaluate_array = (node: Arr): Array<Value> => {
   if (is_array(node.value)) {
     return evaluate_two_d_array(node);
   }

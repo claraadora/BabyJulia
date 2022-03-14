@@ -144,7 +144,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     // Get parameters.
     const params = [] as Parameter[];
     const parameters_ctx = ctx.parameters();
-    for (let i = 0; i < (parameters_ctx ? parameters_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (parameters_ctx?.childCount ?? 0); i++) {
       params.push(parameters_ctx?.getChild(i).accept(this) as Parameter);
     }
 
@@ -182,7 +182,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const args: Expression[] = [];
     const args_ctx = ctx.arguments();
 
-    for (let i = 0; i < (args_ctx ? args_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (args_ctx?.childCount ?? 0); i++) {
       args.push(args_ctx?.getChild(i).accept(this) as Expression);
     }
 
@@ -204,7 +204,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     // Get struct fields.
     const fields = [] as StructField[];
     const fields_ctx = ctx.structFields();
-    for (let i = 0; i < (fields_ctx ? fields_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (fields_ctx?.childCount ?? 0); i++) {
       fields.push(fields_ctx?.getChild(i).accept(this) as StructField);
     }
 
@@ -286,7 +286,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     // visit the cols
     const exprs = [] as Expression[];
     const cols_ctx = ctx.cols();
-    for (let i = 0; i < (cols_ctx ? cols_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (cols_ctx.childCount ?? 0); i++) {
       exprs.push(cols_ctx?.getChild(i).accept(this) as Expression);
     }
 
@@ -306,7 +306,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     // visit the rows
     const exprs = [] as Expression[];
     const rows_ctx = ctx.rows();
-    for (let i = 0; i < (rows_ctx ? rows_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (rows_ctx.childCount ?? 0); i++) {
       exprs.push(rows_ctx?.getChild(i).accept(this) as Expression);
     }
 
@@ -321,7 +321,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     // visit the cols
     const exprs = [] as Expression[];
     const cols_ctx = ctx.cols();
-    for (let i = 0; i < (cols_ctx ? cols_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (cols_ctx.childCount ?? 0); i++) {
       exprs.push(cols_ctx?.getChild(i).accept(this) as Expression);
     }
 

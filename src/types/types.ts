@@ -11,6 +11,7 @@ export type Node =
 
 // Commons
 export type Primitive = number | boolean | string;
+export type Value = Primitive | Object;
 
 export interface Program {
   type: "Program";
@@ -133,7 +134,7 @@ export interface EnvFrame {
 export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
-  value: Primitive | Object | Array<Expression> | null;
+  value: Value | Array<Value> | null;
   type: string;
 }
 
@@ -163,6 +164,8 @@ export interface IndexAccess {
   start_idx: Expression;
   end_idx: Expression | null;
 }
+
+
 
 
 // Type guards
