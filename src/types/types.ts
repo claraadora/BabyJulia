@@ -155,7 +155,7 @@ export interface BinaryExpression {
 
 export interface Arr {
   type: "Arr";
-  value: Array<Expression>; 
+  value: Array<Expression> | Array<Array<Expression>>; 
 }
 
 export interface IndexAccess {
@@ -164,9 +164,6 @@ export interface IndexAccess {
   start_idx: Expression;
   end_idx: Expression | null;
 }
-
-
-
 
 // Type guards
 export const is_primitive = (value: any): boolean => Object(value) !== value;

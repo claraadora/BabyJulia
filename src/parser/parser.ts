@@ -27,7 +27,6 @@ import {
   OneDArrContext,
   TwoDArrContext,
   ColContext,
-  RowContext,
   IndexAccessContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
@@ -296,18 +295,25 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     }
   }
 
-  visitCol(ctx: ColContext): Expression {
-    // console.log("!!! VISIT col");
-    return ctx.expr().accept(this) as Expression;
-  }
-
   visitTwoDArr(ctx: TwoDArrContext): Arr {
-    // console.log("**** VISIT 2d");
-    // visit the rows
-    const exprs = [] as Expression[];
+    // visit the rows and construct the 2d array
+    const exprs = [] as Expression[][];
     const rows_ctx = ctx.rows();
+    let rowIdx = 0;
+    let colIdx = 0; 
+    exprs[rowIdx] = [];
+
     for (let i = 0; i < (rows_ctx.childCount ?? 0); i++) {
-      exprs.push(rows_ctx?.getChild(i).accept(this) as Expression);
+      let col = rows_ctx?.getChild(i).accept(this) as Expression;
+
+      // if col == undefined, it means curr token is ';'
+      if (col) { 
+        exprs[rowIdx][colIdx++] = col;
+        col = rows_ctx?.getChild(i).accept(this) as Expression;
+      } else {
+        colIdx = 0;
+        exprs[++rowIdx] = [];
+      }
     }
 
     return {
@@ -316,19 +322,8 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     }
   }
 
-  visitRow(ctx: RowContext): Arr {
-    // console.log(">>> VISIT ROW");
-    // visit the cols
-    const exprs = [] as Expression[];
-    const cols_ctx = ctx.cols();
-    for (let i = 0; i < (cols_ctx.childCount ?? 0); i++) {
-      exprs.push(cols_ctx?.getChild(i).accept(this) as Expression);
-    }
-
-    return {
-      type: "Arr",
-      value: exprs,
-    }
+  visitCol(ctx: ColContext): Expression {
+    return ctx.expr().accept(this) as Expression;
   }
 
   visitIndexAccess(temp_ctx: IndexAccessContext): IndexAccess {

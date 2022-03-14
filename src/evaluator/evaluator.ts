@@ -331,33 +331,32 @@ const evaluate_binary_expression = (node: BinaryExpression): number => {
 
 // Array
 const evaluate_array = (node: Arr): Array<Value> => {
-  if (is_array(node.value)) {
+  if (is_two_d_array(node)) {
     return evaluate_two_d_array(node);
   }
   return evaluate_one_d_array(node);
 };
 
-const is_array = (arr: Array<Expression>): boolean => {
-  return arr[0]?.type == "Arr";
+const is_two_d_array = (node: Arr): boolean => {
+  return Array.isArray(node.value[0]);
 }
 
-const evaluate_one_d_array = (node: Arr): Array<Primitive> => {
-  const eval_result_array = [] as Primitive[];
+const evaluate_one_d_array = (node: Arr): Array<Value> => {
+  const eval_result_array = [] as Value[];
   for (let i = 0; i < node.value.length; i++) {
-      eval_result_array.push(evaluate(node.value[i]) as Primitive);
+      eval_result_array.push(evaluate(node.value[i] as Expression) as Value);
   }
 
   return eval_result_array;
 };
 
-const evaluate_two_d_array = (node: Arr): Array<Array<Primitive>> => {
-  const eval_result_array = [] as Primitive[][];
+const evaluate_two_d_array = (node: Arr): Array<Array<Value>> => {
+  const eval_result_array = [] as Value[][];
   for (let i = 0; i < node.value.length; i++) {
-    const temp = [] as Primitive[]
+    eval_result_array[i] = [];
     for (let j = 0; j < node.value.length; j++) {
-      temp.push(evaluate(node.value[i][j]) as Primitive);
+      eval_result_array[i][j] = evaluate(node.value[i][j]) as Value;
     }
-    eval_result_array.push(temp);
   }
 
   return eval_result_array;
@@ -365,13 +364,13 @@ const evaluate_two_d_array = (node: Arr): Array<Array<Primitive>> => {
 
 // Index access.
 function evaluate_index_access(node: IndexAccess) {
-  const obj = env.lookup_name(node.name).value as Object;
+  const obj = env.lookup_name(node.name).value as Arr;
   const start_idx = evaluate(node.start_idx) as number;
   if (start_idx - 1 < 0 || start_idx > Object.keys(obj).length) {
     throw new Error("Index out of bounds!");
   }
 
-  if (is_array(obj[0])) {
+  if (obj[0].length > 1) { // 2d array
     const end_idx = evaluate(node.end_idx!) as number;
     if (end_idx - 1 < 0 || end_idx > Object.keys(obj[0]).length) {
       throw new Error("Index out of bounds!");

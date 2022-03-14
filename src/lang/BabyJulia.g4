@@ -65,11 +65,12 @@ printExpr: 'println' '(' expr ')';
 
 // Array
 array: oneDArr | twoDArr;
+
 oneDArr: '[' cols ']';
-cols: (col)+ ( ',' col)*;
+cols: col ( ',' col)*;
+
 twoDArr: '[' rows ']';
-rows: (row) ( ';' row )*;
-row: cols;
+rows: (col+) ( ';' col+ )*;
 col: expr;
 
 idxAccess: name = NAME '[' startIdx = expr ( ',' endIdx = expr )? ']';
