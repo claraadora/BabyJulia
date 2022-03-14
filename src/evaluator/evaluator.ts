@@ -22,6 +22,8 @@ import {
   FieldAccess,
   BinaryExpression,
   is_number,
+  Arr,
+  IndexAccess,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -69,6 +71,10 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return console.log(evaluate(node.expr));
     case "BinaryExpression":
       return evaluate_binary_expression(node);
+    case "Arr":
+      return evaluate_array(node);
+    case "IndexAccess":
+      return evaluate_index_access(node);
     default:
   }
 };
@@ -321,3 +327,60 @@ const evaluate_binary_expression = (node: BinaryExpression): number => {
       throw new Error("Invalid binary expression!");
   }
 };
+
+// Array
+const evaluate_array = (node: Arr): Array<Primitive> | Array<Array<Primitive>> => {
+  if (is_array(node.value)) {
+    return evaluate_two_d_array(node);
+  }
+  return evaluate_one_d_array(node);
+};
+
+const is_array = (arr: Array<Expression>): boolean => {
+  return arr[0]?.type == "Arr";
+}
+
+const evaluate_one_d_array = (node: Arr): Array<Primitive> => {
+  const eval_result_array = [] as Primitive[];
+  for (let i = 0; i < node.value.length; i++) {
+      eval_result_array.push(evaluate(node.value[i]) as Primitive);
+  }
+
+  return eval_result_array;
+};
+
+const evaluate_two_d_array = (node: Arr): Array<Array<Primitive>> => {
+  const eval_result_array = [] as Primitive[][];
+  for (let i = 0; i < node.value.length; i++) {
+    const temp = [] as Primitive[]
+    for (let j = 0; j < node.value.length; j++) {
+      temp.push(evaluate(node.value[i][j]) as Primitive);
+    }
+    eval_result_array.push(temp);
+  }
+
+  return eval_result_array;
+};
+
+// Index access.
+function evaluate_index_access(node: IndexAccess) {
+  const obj = env.lookup_name(node.name).value as Object;
+  const start_idx = evaluate(node.start_idx) as number;
+  if (start_idx - 1 < 0 || start_idx > Object.keys(obj).length) {
+    throw new Error("Index out of bounds!");
+  }
+
+  if (is_array(obj[0])) {
+    const end_idx = evaluate(node.end_idx!) as number;
+    if (end_idx - 1 < 0 || end_idx > Object.keys(obj[0]).length) {
+      throw new Error("Index out of bounds!");
+    }
+    return obj[start_idx - 1][end_idx - 1]; // Julia uses 1-indexing
+  }
+
+  if (node.end_idx) { // e.g. A[0][1] where A is a 1d-array
+    throw new Error("Invalid index access!");
+  }
+
+  return obj[start_idx - 1];
+}

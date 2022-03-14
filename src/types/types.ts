@@ -33,7 +33,9 @@ export type Expression =
   | BooleanLiteral
   | Name
   | PrintExpression
-  | BinaryExpression;
+  | BinaryExpression
+  | Arr
+  | IndexAccess;
 
 export interface NumberLiteral {
   type: "NumberLiteral";
@@ -131,7 +133,7 @@ export interface EnvFrame {
 export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
-  value: Primitive | Object | null;
+  value: Primitive | Object | Array<Expression> | null;
   type: string;
 }
 
@@ -149,6 +151,19 @@ export interface BinaryExpression {
   left: Expression;
   right: Expression;
 }
+
+export interface Arr {
+  type: "Arr";
+  value: Array<Expression>; 
+}
+
+export interface IndexAccess {
+  type: "IndexAccess";
+  name: string;
+  start_idx: Expression;
+  end_idx: Expression | null;
+}
+
 
 // Type guards
 export const is_primitive = (value: any): boolean => Object(value) !== value;

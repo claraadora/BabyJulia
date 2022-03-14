@@ -23,6 +23,12 @@ import {
   PowerContext,
   MultDivContext,
   AddSubContext,
+  ArrContext,
+  OneDArrContext,
+  TwoDArrContext,
+  ColContext,
+  RowContext,
+  IndexAccessContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -56,6 +62,8 @@ import {
   AbstractTypeDeclaration,
   ReturnStatement,
   PrintExpression,
+  Arr,
+  IndexAccess,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -265,6 +273,71 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       operator: ctx._operator.text!,
       left: this.visit(ctx._left) as Expression,
       right: this.visit(ctx._right) as Expression,
+    };
+  }
+
+  // Array
+  visitArr(temp_ctx: ArrContext): Arr {
+    const ctx = temp_ctx.array()
+    return ctx.getChild(0).accept(this) as Arr;
+  }
+
+  visitOneDArr(ctx: OneDArrContext): Arr {
+    // visit the cols
+    const exprs = [] as Expression[];
+    const cols_ctx = ctx.cols();
+    for (let i = 0; i < (cols_ctx ? cols_ctx.childCount : 0); i++) {
+      exprs.push(cols_ctx?.getChild(i).accept(this) as Expression);
+    }
+
+    return {
+      type: "Arr",
+      value: exprs,
+    }
+  }
+
+  visitCol(ctx: ColContext): Expression {
+    // console.log("!!! VISIT col");
+    return ctx.expr().accept(this) as Expression;
+  }
+
+  visitTwoDArr(ctx: TwoDArrContext): Arr {
+    // console.log("**** VISIT 2d");
+    // visit the rows
+    const exprs = [] as Expression[];
+    const rows_ctx = ctx.rows();
+    for (let i = 0; i < (rows_ctx ? rows_ctx.childCount : 0); i++) {
+      exprs.push(rows_ctx?.getChild(i).accept(this) as Expression);
+    }
+
+    return {
+      type: "Arr",
+      value: exprs,
+    }
+  }
+
+  visitRow(ctx: RowContext): Arr {
+    // console.log(">>> VISIT ROW");
+    // visit the cols
+    const exprs = [] as Expression[];
+    const cols_ctx = ctx.cols();
+    for (let i = 0; i < (cols_ctx ? cols_ctx.childCount : 0); i++) {
+      exprs.push(cols_ctx?.getChild(i).accept(this) as Expression);
+    }
+
+    return {
+      type: "Arr",
+      value: exprs,
+    }
+  }
+
+  visitIndexAccess(temp_ctx: IndexAccessContext): IndexAccess {
+    const ctx = temp_ctx.idxAccess();
+    return {
+      type: "IndexAccess",
+      name: ctx._name.text!,
+      start_idx: ctx._startIdx.accept(this) as Expression,
+      end_idx: ctx._endIdx?.accept(this) as Expression ?? null,
     };
   }
 
