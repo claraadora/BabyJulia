@@ -76,7 +76,7 @@ col: expr;
 idxAccess:
 	name = NAME '[' startIdx = expr (',' endIdx = expr)? ']';
 
-forLoopStmt: 'for' var = NAME ( ('in' arr = expr) | 
+forLoopStmt: 'for' name = NAME ( ('in' arr = expr) | 
 	('in' | ASSIGN) (startIdx = expr ':' endIdx = expr) )
 	NEWLINE body NEWLINE 'end';
 

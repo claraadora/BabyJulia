@@ -168,7 +168,7 @@ export interface IndexAccess {
 
 export interface ForLoop {
   type: "ForLoop";
-  var: string;
+  name: string;
   arr: Expression | null;
   start_idx: Expression | null;
   end_idx: Expression | null;
@@ -189,12 +189,17 @@ export const is_function_definition = (
 export const is_struct_definition = (node: Node): node is StructDefinition =>
   node?.type === "StructDefinition";
 
+export const is_for_loop = (
+  node: Node
+): node is ForLoop => node?.type === "ForLoop";
+
 export const is_declaration = (
   node: Node
 ): node is VariableDefinition | FunctionDefinition | StructDefinition =>
   is_variable_definition(node) ||
   is_function_definition(node) ||
-  is_struct_definition(node);
+  is_struct_definition(node) ||
+  is_for_loop(node);
 
 export const is_number = (value: any): value is number =>
   typeof value === typeof 1;

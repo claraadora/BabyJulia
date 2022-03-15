@@ -27,6 +27,7 @@ import {
   Value,
   is_func_val_and_type,
   is_var_val_and_type,
+  ForLoop,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -77,6 +78,8 @@ export const evaluate = (node: Node): Value | void => {
       return evaluate_array(node);
     case "IndexAccess":
       return evaluate_index_access(node);
+    case "ForLoop":
+      return evaluate_for_loop(node);
     default:
   }
 };
@@ -85,8 +88,13 @@ const scan_out_names = (node: ExpressionSequence) => {
   return node.expressions
     .filter((expr) => is_declaration(expr))
     .map(
-      (expr: FunctionDefinition | VariableDefinition | StructDefinition) =>
-        expr.name
+      (
+        expr:
+          | FunctionDefinition
+          | VariableDefinition
+          | StructDefinition
+          | ForLoop
+      ) => expr.name
     );
 };
 
@@ -397,4 +405,41 @@ function evaluate_index_access(node: IndexAccess) {
   return is_2D && end_idx
     ? arr[start_idx - 1][end_idx - 1]
     : arr[start_idx - 1];
+}
+
+// For loop
+function evaluate_for_loop(node: ForLoop) {
+  // Add var and its initial value to the env.
+  // Initialise the var to start_idx for "for i in <start_idx>:<end_idx>"
+  // and to A[0] for "for i in A"
+  let for_loop_var_def: VariableDefinition = {
+    type: "VariableDefinition",
+    name: node.name,
+    expr: is_iterating_array(node) ? node.arr![0] : node.start_idx,
+    atype: null,
+  };
+  evaluate(for_loop_var_def);
+
+  if (is_iterating_array(node)) {
+  } else {
+    // "for i in <start_idx>:<end_idx>"
+    // Note that Julia uses 1-indexing, and <end_idx> is inclusive
+    let curr_idx = env.lookup_name(node.name).value!;
+    while ((curr_idx as number) <= evaluate(node.end_idx! as NumberLiteral)) {
+      const result = evaluate(node.body);
+      if (is_evaluated_return_statement(result)) {
+        return result;
+      }
+
+      // Increment curr_idx in the env.
+      curr_idx = (curr_idx as number) + 1;
+      env.assign_name(node.name, curr_idx, ANY);
+    }
+  }
+
+  return;
+}
+
+function is_iterating_array(node: ForLoop) {
+  return node.arr ? true : false;
 }
