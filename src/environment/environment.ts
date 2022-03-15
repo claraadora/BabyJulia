@@ -138,11 +138,9 @@ class EnvFrame {
   }
 }
 
-const size = (arr: Array<Value>) => [
-  arr.length,
-  Array.isArray(arr[0]) ? Object.keys(arr[0]).length : null,
-];
-
 const BUILT_IN_NAME_VALS = {
-  size: size,
+  size: (arr: Array<Value>) => [
+    arr.length,
+    Array.isArray(arr[0]) ? arr[0].length : null,
+  ],
 };

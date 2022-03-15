@@ -3,6 +3,7 @@ import * as fs from "fs";
 import { argv } from "process";
 import { evaluate } from "./evaluator/evaluator";
 import * as _ from "lodash";
+import { Value } from "./types/types";
 
 function sanitize(node: any) {
   if (!_.isObject(node)) {
@@ -19,9 +20,17 @@ function sanitize(node: any) {
   }
 }
 
-const chalk = require("chalk");
-const header = chalk.hex("#f4b5f9").bold;
-const result = chalk.hex("#f5ecbb");
+function pretty_print(value: Value | void) {
+  const tabs = typeof value === typeof {} && !Array.isArray(value) ? 1 : 0;
+  const chalk = require("chalk");
+  const header = chalk.hex("#f4b5f9").bold;
+  const result = chalk.hex("#f5ecbb");
+
+  console.log(
+    header("BabyJulia > "),
+    result(JSON.stringify(value, null, tabs))
+  );
+}
 
 function main() {
   const file_name = argv[3]; // TODO: brittle
@@ -32,10 +41,7 @@ function main() {
 
   try {
     const evaluated_program = evaluate(parsed_program);
-    console.log(
-      header("BabyJulia > "),
-      result(JSON.stringify(evaluated_program, null, 1))
-    );
+    pretty_print(evaluated_program);
   } catch (err) {
     console.log(err.message);
   }
