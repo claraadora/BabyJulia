@@ -134,7 +134,7 @@ export interface EnvFrame {
 export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
-  value: Value | Array<Value> | null;
+  value: Value | Array<Value> | null | Function;
   type: string;
 }
 
@@ -196,3 +196,6 @@ export const is_func_val_and_type = (value: any): value is FuncValAndType =>
   "param_names" in value &&
   "return_type" in value &&
   "env_stack" in value;
+
+export const is_var_val_and_type = (value: any): value is VarValAndType =>
+  typeof value === typeof {} && "value" in value && "type" in value;

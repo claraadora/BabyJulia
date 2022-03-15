@@ -26,6 +26,7 @@ import {
   IndexAccess,
   Value,
   is_func_val_and_type,
+  is_var_val_and_type,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -223,26 +224,20 @@ function is_constructor_function(name: string) {
   return name in type_graph.node_map;
 }
 
-function apply_in_underlying_javascript(
-  name: string,
-  arg_vals: (Primitive | Object)[]
-) {
+function construct(name: string, arg_vals: (Primitive | Object)[]) {
   const funcValAndType = env.lookup_fnames(name)[0];
+  const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
 
-  if (is_constructor_function(name)) {
-    const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
+  const invalid_arg_types = arg_types.filter(
+    (arg_type, idx) =>
+      type_graph.get_distance_from(
+        arg_type,
+        funcValAndType.param_types[idx]
+      ) === -1 // can't find path from arg type to param type
+  );
 
-    const invalid_arg_types = arg_types.filter(
-      (arg_type, idx) =>
-        type_graph.get_distance_from(
-          arg_type,
-          funcValAndType.param_types[idx]
-        ) === -1 // can't find path from arg type to param type
-    );
-
-    if (invalid_arg_types.length > 0)
-      throw new Error("Invalid arguments to function!");
-  }
+  if (invalid_arg_types.length > 0)
+    throw new Error("Invalid arguments to constructor!");
 
   const func = funcValAndType.value as Function;
   return func(...arg_vals);
@@ -251,9 +246,14 @@ function apply_in_underlying_javascript(
 function apply(name: string, arg_vals: (Primitive | Object)[]) {
   const potential_funcs = env.lookup_fnames(name);
 
-  // Check if need to apply in underlying javascript.
-  if (!is_func_val_and_type(potential_funcs[0])) {
-    return apply_in_underlying_javascript(name, arg_vals);
+  // Dispatch to constructor.
+  if (is_constructor_function(name)) {
+    return construct(name, arg_vals);
+  }
+
+  // Dispatch to underlying javascript.
+  if (is_var_val_and_type(potential_funcs[0])) {
+    return (potential_funcs[0].value as Function)(...arg_vals);
   }
 
   // Get the most specific function.

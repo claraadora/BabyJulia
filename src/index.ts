@@ -19,6 +19,10 @@ function sanitize(node: any) {
   }
 }
 
+const chalk = require("chalk");
+const header = chalk.hex("#f4b5f9").bold;
+const result = chalk.hex("#f5ecbb");
+
 function main() {
   const file_name = argv[3]; // TODO: brittle
   const program = fs.readFileSync(file_name, "utf8");
@@ -28,7 +32,10 @@ function main() {
 
   try {
     const evaluated_program = evaluate(parsed_program);
-    console.log("\x1b[36m%s\x1b[0m", "BabyJulia >", evaluated_program);
+    console.log(
+      header("BabyJulia > "),
+      result(JSON.stringify(evaluated_program, null, 1))
+    );
   } catch (err) {
     console.log(err.message);
   }
