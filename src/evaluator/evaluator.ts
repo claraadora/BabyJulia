@@ -28,6 +28,7 @@ import {
   is_func_val_and_type,
   is_var_val_and_type,
   ForLoop,
+  is_for_loop,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -85,7 +86,7 @@ export const evaluate = (node: Node): Value | void => {
 };
 
 const scan_out_names = (node: ExpressionSequence) => {
-  return node.expressions
+  const declr_names = node.expressions
     .filter((expr) => is_declaration(expr))
     .map(
       (
@@ -96,6 +97,10 @@ const scan_out_names = (node: ExpressionSequence) => {
           | ForLoop
       ) => expr.name
     );
+  const for_loop_name = node.expressions
+    .filter((expr) => is_for_loop(expr))
+    .map((expr: ForLoop) => expr.name);
+  return [...for_loop_name, ...declr_names];
 };
 
 const list_of_values = (expressions: Expression[]): (Primitive | Object)[] => {
@@ -121,9 +126,6 @@ const get_runtime_type = (value: any) => {
 
 // Expressions.
 const evaluate_sequence = (node: ExpressionSequence) => {
-  // Extend environment.
-  env.extend(scan_out_names(node));
-
   // Evaluate expressions.
   const expressions = node.expressions;
   let last_evaluated_expr;
@@ -135,10 +137,6 @@ const evaluate_sequence = (node: ExpressionSequence) => {
       return get_evaluated_return_value(last_evaluated_expr);
     }
   }
-
-  // Pop environment.
-  env.pop();
-
   return last_evaluated_expr;
 };
 
@@ -409,37 +407,14 @@ function evaluate_index_access(node: IndexAccess) {
 
 // For loop
 function evaluate_for_loop(node: ForLoop) {
-  // Add var and its initial value to the env.
-  // Initialise the var to start_idx for "for i in <start_idx>:<end_idx>"
-  // and to A[0] for "for i in A"
-  let for_loop_var_def: VariableDefinition = {
-    type: "VariableDefinition",
-    name: node.name,
-    expr: is_iterating_array(node) ? node.arr![0] : node.start_idx,
-    atype: null,
-  };
-  evaluate(for_loop_var_def);
+  env.extend([]);
+  const start = evaluate(node.start_idx) as number;
+  const end = evaluate(node.end_idx) as number;
 
-  if (is_iterating_array(node)) {
-  } else {
-    // "for i in <start_idx>:<end_idx>"
-    // Note that Julia uses 1-indexing, and <end_idx> is inclusive
-    let curr_idx = env.lookup_name(node.name).value!;
-    while ((curr_idx as number) <= evaluate(node.end_idx! as NumberLiteral)) {
-      const result = evaluate(node.body);
-      if (is_evaluated_return_statement(result)) {
-        return result;
-      }
-
-      // Increment curr_idx in the env.
-      curr_idx = (curr_idx as number) + 1;
-      env.assign_name(node.name, curr_idx, ANY);
-    }
+  for (let i = start; i < end; i++) {
+    console.log(i);
+    console.log(node.body);
+    evaluate(node.body);
   }
-
-  return;
-}
-
-function is_iterating_array(node: ForLoop) {
-  return node.arr ? true : false;
+  env.pop();
 }

@@ -348,7 +348,6 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "ForLoop",
       name: ctx._name.text!,
-      arr: (ctx._arr?.accept(this) as Expression) ?? null,
       start_idx: (ctx._startIdx?.accept(this) as Expression) ?? null,
       end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
       body: body,
