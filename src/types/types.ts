@@ -189,14 +189,6 @@ export const is_declaration = (
 export const is_number = (value: any): value is number =>
   typeof value === typeof 1;
 
-export interface FuncValAndType {
-  value: ExpressionSequence | null | Function;
-  param_types: string[];
-  param_names: string[];
-  return_type: string | null;
-  env_stack: EnvStack;
-}
-
 export const is_func_val_and_type = (value: any): value is FuncValAndType =>
   typeof value === typeof {} &&
   "value" in value &&
