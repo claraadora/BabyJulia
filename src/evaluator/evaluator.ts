@@ -25,6 +25,7 @@ import {
   Arr,
   IndexAccess,
   Value,
+  is_func_val_and_type,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -35,6 +36,7 @@ const RETURN_VALUE_TAG = "return_value";
 
 const type_graph = new TypeGraph();
 let env = new EnvStack();
+env.setup();
 
 const obj_to_runtime_types: {
   [objref: string]: string;
@@ -57,9 +59,7 @@ export const evaluate = (node: Node): Value | void => {
     case "FunctionDefinition":
       return evaluate_function_definition(node);
     case "FunctionApplication":
-      return is_constructor_function(node.name)
-        ? construct(node.name, list_of_values(node.args))
-        : apply(node.name, list_of_values(node.args));
+      return apply(node.name, list_of_values(node.args));
     case "StructDefinition":
       return evaluate_struct_definition(node);
     case "FieldAccess":
@@ -223,29 +223,41 @@ function is_constructor_function(name: string) {
   return name in type_graph.node_map;
 }
 
-function construct(name: string, arg_vals: (Primitive | Object)[]) {
+function apply_in_underlying_javascript(
+  name: string,
+  arg_vals: (Primitive | Object)[]
+) {
   const funcValAndType = env.lookup_fnames(name)[0];
-  const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
 
-  const invalid_arg_types = arg_types.filter(
-    (arg_type, idx) =>
-      type_graph.get_distance_from(
-        arg_type,
-        funcValAndType.param_types[idx]
-      ) === -1 // can't find path from arg type to param type
-  );
+  if (is_constructor_function(name)) {
+    const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
 
-  if (invalid_arg_types.length > 0)
-    throw new Error("Invalid arguments to constructor!");
+    const invalid_arg_types = arg_types.filter(
+      (arg_type, idx) =>
+        type_graph.get_distance_from(
+          arg_type,
+          funcValAndType.param_types[idx]
+        ) === -1 // can't find path from arg type to param type
+    );
+
+    if (invalid_arg_types.length > 0)
+      throw new Error("Invalid arguments to function!");
+  }
 
   const func = funcValAndType.value as Function;
   return func(...arg_vals);
 }
 
 function apply(name: string, arg_vals: (Primitive | Object)[]) {
+  const potential_funcs = env.lookup_fnames(name);
+
+  // Check if need to apply in underlying javascript.
+  if (!is_func_val_and_type(potential_funcs[0])) {
+    return apply_in_underlying_javascript(name, arg_vals);
+  }
+
   // Get the most specific function.
   const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
-  const potential_funcs = env.lookup_fnames(name);
   const func = get_most_specific_function(potential_funcs, arg_types);
 
   // Extend environment.

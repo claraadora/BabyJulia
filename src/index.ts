@@ -28,7 +28,7 @@ function main() {
 
   try {
     const evaluated_program = evaluate(parsed_program);
-    console.log("BabyJulia >", evaluated_program);
+    console.log("\x1b[36m%s\x1b[0m", "BabyJulia >", evaluated_program);
   } catch (err) {
     console.log(err.message);
   }

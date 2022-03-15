@@ -5,6 +5,7 @@ import {
   is_function_definition,
   Primitive,
   ValAndType,
+  Value,
   VarValAndType,
 } from "./../types/types";
 import {
@@ -19,6 +20,13 @@ export class EnvStack {
 
   constructor(env_frames: EnvFrame[] = []) {
     this.env_frames = env_frames;
+  }
+
+  setup() {
+    this.extend(Object.keys(BUILT_IN_NAME_VALS));
+    for (let [name, val] of Object.entries(BUILT_IN_NAME_VALS)) {
+      this.assign_name(name, val, "any");
+    }
   }
 
   // External APIs
@@ -129,3 +137,12 @@ class EnvFrame {
     });
   }
 }
+
+const size = (arr: Array<Value>) => [
+  arr.length,
+  Array.isArray(arr[0]) ? Object.keys(arr[0]).length : null,
+];
+
+const BUILT_IN_NAME_VALS = {
+  size: size,
+};
