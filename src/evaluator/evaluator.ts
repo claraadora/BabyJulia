@@ -29,6 +29,7 @@ import {
   is_var_val_and_type,
   ForLoop,
   is_for_loop,
+  Block,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -47,6 +48,8 @@ const obj_to_runtime_types: {
 
 export const evaluate = (node: Node): Value | void => {
   switch (node?.type) {
+    case "Block":
+      return evaluate_block(node);
     case "ExpressionSequence":
       return evaluate_sequence(node);
     case "NumberLiteral":
@@ -85,8 +88,8 @@ export const evaluate = (node: Node): Value | void => {
   }
 };
 
-const scan_out_names = (node: ExpressionSequence) => {
-  const declr_names = node.expressions
+const scan_out_names = (node: ExpressionSequence) =>
+  node.expressions
     .filter((expr) => is_declaration(expr))
     .map(
       (
@@ -97,11 +100,6 @@ const scan_out_names = (node: ExpressionSequence) => {
           | ForLoop
       ) => expr.name
     );
-  const for_loop_name = node.expressions
-    .filter((expr) => is_for_loop(expr))
-    .map((expr: ForLoop) => expr.name);
-  return [...for_loop_name, ...declr_names];
-};
 
 const list_of_values = (expressions: Expression[]): (Primitive | Object)[] => {
   return expressions.map((expr) => evaluate(expr) as Primitive | Object);
@@ -122,6 +120,14 @@ const get_runtime_type = (value: any) => {
     default:
       throw new Error("Can't find type!");
   }
+};
+
+// Block.
+const evaluate_block = (node: Block) => {
+  env.extend(scan_out_names(node.node as ExpressionSequence)); // TODO: fix
+  const evaluation_result = evaluate(node.node);
+  // env.pop(); TODO: maximal hack
+  return evaluation_result;
 };
 
 // Expressions.
@@ -412,8 +418,6 @@ function evaluate_for_loop(node: ForLoop) {
   const end = evaluate(node.end_idx) as number;
 
   for (let i = start; i < end; i++) {
-    console.log(i);
-    console.log(node.body);
     evaluate(node.body);
   }
   env.pop();

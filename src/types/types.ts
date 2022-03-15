@@ -28,6 +28,7 @@ export interface Block {
   type: "Block";
   node: Node;
 }
+
 export type Expression =
   | VariableDefinition
   | FunctionDefinition

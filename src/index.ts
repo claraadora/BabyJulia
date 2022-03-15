@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { argv } from "process";
 import { evaluate } from "./evaluator/evaluator";
 import * as _ from "lodash";
-import { Value } from "./types/types";
+import { Block, Node, Value } from "./types/types";
 
 function sanitize(node: any) {
   if (!_.isObject(node)) {
@@ -32,6 +32,13 @@ function pretty_print(value: Value | void) {
   );
 }
 
+const make_block = (node: Node): Block => {
+  return {
+    type: "Block",
+    node,
+  };
+};
+
 function main() {
   const file_name = argv[3]; // TODO: brittle
   const program = fs.readFileSync(file_name, "utf8");
@@ -40,7 +47,8 @@ function main() {
   sanitize(parsed_program);
 
   try {
-    const evaluated_program = evaluate(parsed_program);
+    const block = make_block(parsed_program);
+    const evaluated_program = evaluate(block);
     pretty_print(evaluated_program);
   } catch (err) {
     console.log(err.message);
