@@ -11,6 +11,7 @@ export type Node =
 
 // Commons
 export type Primitive = number | boolean | string;
+export type Value = Primitive | Object | Array<Value>;
 
 export interface Program {
   type: "Program";
@@ -33,7 +34,9 @@ export type Expression =
   | BooleanLiteral
   | Name
   | PrintExpression
-  | BinaryExpression;
+  | BinaryExpression
+  | Arr
+  | IndexAccess;
 
 export interface NumberLiteral {
   type: "NumberLiteral";
@@ -131,7 +134,7 @@ export interface EnvFrame {
 export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
-  value: Primitive | Object | null;
+  value: Value | Array<Value> | null;
   type: string;
 }
 
@@ -148,6 +151,18 @@ export interface BinaryExpression {
   operator: string;
   left: Expression;
   right: Expression;
+}
+
+export interface Arr {
+  type: "Arr";
+  value: Array<Expression> | Array<Array<Expression>>;
+}
+
+export interface IndexAccess {
+  type: "IndexAccess";
+  name: string;
+  start_idx: Expression;
+  end_idx: Expression | null;
 }
 
 // Type guards

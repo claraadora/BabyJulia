@@ -23,6 +23,11 @@ import {
   PowerContext,
   MultDivContext,
   AddSubContext,
+  ArrContext,
+  OneDArrContext,
+  TwoDArrContext,
+  ColContext,
+  IndexAccessContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -56,6 +61,8 @@ import {
   AbstractTypeDeclaration,
   ReturnStatement,
   PrintExpression,
+  Arr,
+  IndexAccess,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -136,7 +143,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     // Get parameters.
     const params = [] as Parameter[];
     const parameters_ctx = ctx.parameters();
-    for (let i = 0; i < (parameters_ctx ? parameters_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (parameters_ctx?.childCount ?? 0); i++) {
       params.push(parameters_ctx?.getChild(i).accept(this) as Parameter);
     }
 
@@ -174,7 +181,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const args: Expression[] = [];
     const args_ctx = ctx.arguments();
 
-    for (let i = 0; i < (args_ctx ? args_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (args_ctx?.childCount ?? 0); i++) {
       args.push(args_ctx?.getChild(i).accept(this) as Expression);
     }
 
@@ -196,7 +203,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     // Get struct fields.
     const fields = [] as StructField[];
     const fields_ctx = ctx.structFields();
-    for (let i = 0; i < (fields_ctx ? fields_ctx.childCount : 0); i++) {
+    for (let i = 0; i < (fields_ctx?.childCount ?? 0); i++) {
       fields.push(fields_ctx?.getChild(i).accept(this) as StructField);
     }
 
@@ -265,6 +272,66 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       operator: ctx._operator.text!,
       left: this.visit(ctx._left) as Expression,
       right: this.visit(ctx._right) as Expression,
+    };
+  }
+
+  // Array
+  visitArr(temp_ctx: ArrContext): Arr {
+    const ctx = temp_ctx.array();
+    return ctx.getChild(0).accept(this) as Arr;
+  }
+
+  visitOneDArr(ctx: OneDArrContext): Arr {
+    // Visit the cols.
+    const exprs = [] as Expression[];
+    const cols_ctx = ctx.cols();
+    for (let i = 0; i < (cols_ctx.childCount ?? 0); i++) {
+      exprs.push(cols_ctx?.getChild(i).accept(this) as Expression);
+    }
+
+    return {
+      type: "Arr",
+      value: exprs,
+    };
+  }
+
+  visitTwoDArr(ctx: TwoDArrContext): Arr {
+    // Visit the rows and construct the 2d array.
+    const exprs = [] as Expression[][];
+    const rows_ctx = ctx.rows();
+    let rowIdx = 0;
+    let colIdx = 0;
+    exprs[rowIdx] = [];
+
+    for (let i = 0; i < (rows_ctx.childCount ?? 0); i++) {
+      let col = rows_ctx?.getChild(i).accept(this) as Expression;
+
+      if (col) {
+        exprs[rowIdx][colIdx++] = col;
+      } else {
+        // If col == undefined, it means we are at the end of the current row.
+        colIdx = 0;
+        exprs[++rowIdx] = [];
+      }
+    }
+
+    return {
+      type: "Arr",
+      value: exprs,
+    };
+  }
+
+  visitCol(ctx: ColContext): Expression {
+    return ctx.expr().accept(this) as Expression;
+  }
+
+  visitIndexAccess(temp_ctx: IndexAccessContext): IndexAccess {
+    const ctx = temp_ctx.idxAccess();
+    return {
+      type: "IndexAccess",
+      name: ctx._name.text!,
+      start_idx: ctx._startIdx.accept(this) as Expression,
+      end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
     };
   }
 

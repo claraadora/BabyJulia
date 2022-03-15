@@ -4,15 +4,18 @@ grammar BabyJulia;
 program: exprSequence EOF;
 exprSequence: (expr (NEWLINE)* | NEWLINE)*;
 expr:
-	varDef														# VarDefinition
-	| funcDef													# FuncDefinition
-	| funcApp													# FuncApplication
-	| structDef													# StructDefinition
-	| fldAccess													# FieldAccess
-	| absTypeDeclr												# AbstractTypeDeclaration
-	| identifier												# Name
-	| returnStmt												# ReturnStatement
-	| printExpr													# PrintExpression
+	varDef			# VarDefinition
+	| funcDef		# FuncDefinition
+	| funcApp		# FuncApplication
+	| structDef		# StructDefinition
+	| fldAccess		# FieldAccess
+	| idxAccess		# IndexAccess
+	| absTypeDeclr	# AbstractTypeDeclaration
+	| identifier	# Name
+	| returnStmt	# ReturnStatement
+	| printExpr		# PrintExpression
+	| array			# Arr
+	// | forStmt													# ForLoop
 	| <assoc = right> left = expr operator = POW right = expr	# Power
 	| left = expr operator = (MUL | DIV) right = expr			# MultDiv
 	| left = expr operator = (ADD | SUB) right = expr			# AddSub
@@ -60,6 +63,22 @@ identifier: NAME;
 // Print Expression
 printExpr: 'println' '(' expr ')';
 
+// Array
+array: oneDArr | twoDArr;
+
+oneDArr: '[' cols ']';
+cols: col ( ',' col)*;
+
+twoDArr: '[' rows ']';
+rows: (col+) ( ';' col+)*;
+col: expr;
+
+idxAccess:
+	name = NAME '[' startIdx = expr (',' endIdx = expr)? ']';
+
+// forStmt: 'for' var = NAME ( 'in' | ASSIGN ) (arr = NAME | (start = expr ':' end = expr)) NEWLINE
+// exprSequence NEWLINE 'end';
+
 // Lexer rules bin ops
 POW: '^';
 MUL: '*';
@@ -77,11 +96,14 @@ NAME: ('a' ..'z' | 'A' ..'Z' | '_') (
 		| '_'
 		| '0' ..'9'
 	)*;
-WHITESPACE: [ \r\t]+ -> skip;
+
+SKIP_: (WHITESPACE | COMMENT) -> skip;
+WHITESPACE: [ \r\t]+;
+COMMENT: '#' ~[\r\n\f]*;
+
 NEWLINE: ('\r'? '\n' | '\r')+;
 ASSIGN: '=';
 
 // types
 INSTANCE_OF: '::';
 SUBTYPE_OF: '<:';
-

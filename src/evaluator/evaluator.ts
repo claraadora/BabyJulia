@@ -22,6 +22,9 @@ import {
   FieldAccess,
   BinaryExpression,
   is_number,
+  Arr,
+  IndexAccess,
+  Value,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -37,7 +40,7 @@ const obj_to_runtime_types: {
   [objref: string]: string;
 } = {};
 
-export const evaluate = (node: Node): Primitive | Object | void => {
+export const evaluate = (node: Node): Value | void => {
   switch (node?.type) {
     case "ExpressionSequence":
       return evaluate_sequence(node);
@@ -69,6 +72,10 @@ export const evaluate = (node: Node): Primitive | Object | void => {
       return console.log(evaluate(node.expr));
     case "BinaryExpression":
       return evaluate_binary_expression(node);
+    case "Arr":
+      return evaluate_array(node);
+    case "IndexAccess":
+      return evaluate_index_access(node);
     default:
   }
 };
@@ -321,3 +328,61 @@ const evaluate_binary_expression = (node: BinaryExpression): number => {
       throw new Error("Invalid binary expression!");
   }
 };
+
+// Array
+const evaluate_array = (node: Arr): Array<Value> => {
+  return is_two_d_array(node)
+    ? evaluate_two_d_array(node)
+    : evaluate_one_d_array(node);
+};
+
+const is_two_d_array = (node: Arr): boolean => {
+  return Array.isArray(node.value[0]);
+};
+
+const evaluate_one_d_array = (node: Arr): Array<Value> => {
+  return node.value.map((element) => evaluate(element as Expression) as Value);
+};
+
+const evaluate_two_d_array = (node: Arr): Array<Array<Value>> => {
+  const eval_result_array = [] as Value[][];
+  const num_rows = node.value.length;
+  const num_cols = (node.value[0] as Array<Expression>).length;
+
+  for (let i = 0; i < num_rows; i++) {
+    eval_result_array[i] = [];
+    for (let j = 0; j < num_cols; j++) {
+      eval_result_array[i][j] = evaluate(node.value[i][j]) as Value;
+    }
+  }
+
+  return eval_result_array;
+};
+
+// Index access.
+function evaluate_index_access(node: IndexAccess) {
+  const arr = env.lookup_name(node.name).value as Array<Value>;
+  const is_2D = Array.isArray(arr[0]);
+
+  const start_idx = evaluate(node.start_idx) as number;
+  const end_idx = is_2D ? (evaluate(node.end_idx!) as number) : null;
+
+  // Check validity of start_idx.
+  if (start_idx <= 0 || start_idx > arr.length) {
+    throw new Error("Index out of bounds!");
+  }
+
+  // Check validity of end_idx.
+  if (end_idx && (end_idx <= 0 || end_idx > Object.keys(arr[0]).length)) {
+    throw new Error("Index out of bounds!");
+  }
+
+  // Check validity of index access.
+  if (!is_2D && node.end_idx) {
+    throw new Error("Invalid 1D array index access!");
+  }
+
+  return is_2D && end_idx
+    ? arr[start_idx - 1][end_idx - 1]
+    : arr[start_idx - 1];
+}
