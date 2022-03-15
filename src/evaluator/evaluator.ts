@@ -251,7 +251,7 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
     return construct(name, arg_vals);
   }
 
-  // Dispatch to underlying javascript.
+  // Dispatch to underlying javascript function.
   if (is_var_val_and_type(potential_funcs[0])) {
     return (potential_funcs[0].value as Function)(...arg_vals);
   }
