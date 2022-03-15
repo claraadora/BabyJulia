@@ -277,12 +277,12 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
   // Array
   visitArr(temp_ctx: ArrContext): Arr {
-    const ctx = temp_ctx.array()
+    const ctx = temp_ctx.array();
     return ctx.getChild(0).accept(this) as Arr;
   }
 
   visitOneDArr(ctx: OneDArrContext): Arr {
-    // visit the cols
+    // Visit the cols.
     const exprs = [] as Expression[];
     const cols_ctx = ctx.cols();
     for (let i = 0; i < (cols_ctx.childCount ?? 0); i++) {
@@ -292,25 +292,24 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "Arr",
       value: exprs,
-    }
+    };
   }
 
   visitTwoDArr(ctx: TwoDArrContext): Arr {
-    // visit the rows and construct the 2d array
+    // Visit the rows and construct the 2d array.
     const exprs = [] as Expression[][];
     const rows_ctx = ctx.rows();
     let rowIdx = 0;
-    let colIdx = 0; 
+    let colIdx = 0;
     exprs[rowIdx] = [];
 
     for (let i = 0; i < (rows_ctx.childCount ?? 0); i++) {
       let col = rows_ctx?.getChild(i).accept(this) as Expression;
 
-      // if col == undefined, it means curr token is ';'
-      if (col) { 
+      if (col) {
         exprs[rowIdx][colIdx++] = col;
-        col = rows_ctx?.getChild(i).accept(this) as Expression;
       } else {
+        // If col == undefined, it means we are at the end of the current row.
         colIdx = 0;
         exprs[++rowIdx] = [];
       }
@@ -319,7 +318,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "Arr",
       value: exprs,
-    }
+    };
   }
 
   visitCol(ctx: ColContext): Expression {
@@ -332,7 +331,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       type: "IndexAccess",
       name: ctx._name.text!,
       start_idx: ctx._startIdx.accept(this) as Expression,
-      end_idx: ctx._endIdx?.accept(this) as Expression ?? null,
+      end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
     };
   }
 

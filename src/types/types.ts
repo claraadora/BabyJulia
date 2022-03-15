@@ -11,7 +11,7 @@ export type Node =
 
 // Commons
 export type Primitive = number | boolean | string;
-export type Value = Primitive | Object;
+export type Value = Primitive | Object | Array<Value>;
 
 export interface Program {
   type: "Program";
@@ -155,7 +155,7 @@ export interface BinaryExpression {
 
 export interface Arr {
   type: "Arr";
-  value: Array<Expression> | Array<Array<Expression>>; 
+  value: Array<Expression> | Array<Array<Expression>>;
 }
 
 export interface IndexAccess {
