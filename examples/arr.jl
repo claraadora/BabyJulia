@@ -9,4 +9,5 @@ println(C) # [[1,2,3], [3,4,5], [6,7,8]]
 println(C[3,3]) # 8
 println(D) # [[7,8], [9,10]]
 println(D[1,2]) # 8
-A[1,1] # Invalid
+size(D)
+D

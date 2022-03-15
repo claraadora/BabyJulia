@@ -15,4 +15,7 @@ end
 kitty = Cat("Kitty", 1, true)
 obama = Human("Michelle Obama", 180, true)
 
-obama.name
+println(kitty.name)
+println(kitty.age)
+println(kitty.isFemale)
+obama

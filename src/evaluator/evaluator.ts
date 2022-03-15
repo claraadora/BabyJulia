@@ -25,6 +25,8 @@ import {
   Arr,
   IndexAccess,
   Value,
+  is_func_val_and_type,
+  is_var_val_and_type,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -35,6 +37,7 @@ const RETURN_VALUE_TAG = "return_value";
 
 const type_graph = new TypeGraph();
 let env = new EnvStack();
+env.setup();
 
 const obj_to_runtime_types: {
   [objref: string]: string;
@@ -57,9 +60,7 @@ export const evaluate = (node: Node): Value | void => {
     case "FunctionDefinition":
       return evaluate_function_definition(node);
     case "FunctionApplication":
-      return is_constructor_function(node.name)
-        ? construct(node.name, list_of_values(node.args))
-        : apply(node.name, list_of_values(node.args));
+      return apply(node.name, list_of_values(node.args));
     case "StructDefinition":
       return evaluate_struct_definition(node);
     case "FieldAccess":
@@ -243,9 +244,20 @@ function construct(name: string, arg_vals: (Primitive | Object)[]) {
 }
 
 function apply(name: string, arg_vals: (Primitive | Object)[]) {
+  const potential_funcs = env.lookup_fnames(name);
+
+  // Dispatch to constructor.
+  if (is_constructor_function(name)) {
+    return construct(name, arg_vals);
+  }
+
+  // Dispatch to underlying javascript function.
+  if (is_var_val_and_type(potential_funcs[0])) {
+    return (potential_funcs[0].value as Function)(...arg_vals);
+  }
+
   // Get the most specific function.
   const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
-  const potential_funcs = env.lookup_fnames(name);
   const func = get_most_specific_function(potential_funcs, arg_types);
 
   // Extend environment.
