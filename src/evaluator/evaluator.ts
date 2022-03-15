@@ -88,18 +88,23 @@ export const evaluate = (node: Node): Value | void => {
   }
 };
 
-const scan_out_names = (node: ExpressionSequence) =>
-  node.expressions
-    .filter((expr) => is_declaration(expr))
-    .map(
-      (
-        expr:
-          | FunctionDefinition
-          | VariableDefinition
-          | StructDefinition
-          | ForLoop
-      ) => expr.name
-    );
+const scan_out_names = (node: ForLoop | ExpressionSequence) => {
+  if (node.type === "ForLoop") {
+    return [node.name];
+  } else {
+    return node.expressions
+      .filter((expr) => is_declaration(expr))
+      .map(
+        (
+          expr:
+            | FunctionDefinition
+            | VariableDefinition
+            | StructDefinition
+            | ForLoop
+        ) => expr.name
+      );
+  }
+};
 
 const list_of_values = (expressions: Expression[]): (Primitive | Object)[] => {
   return expressions.map((expr) => evaluate(expr) as Primitive | Object);
@@ -107,6 +112,10 @@ const list_of_values = (expressions: Expression[]): (Primitive | Object)[] => {
 
 const get_runtime_type = (value: any) => {
   const type = typeof value;
+
+  if (Array.isArray(value)) {
+    return "Vector";
+  }
 
   switch (type) {
     case typeof 1:
@@ -124,9 +133,9 @@ const get_runtime_type = (value: any) => {
 
 // Block.
 const evaluate_block = (node: Block) => {
-  env.extend(scan_out_names(node.node as ExpressionSequence)); // TODO: fix
+  env.extend(scan_out_names(node.node)); // TODO: fix
   const evaluation_result = evaluate(node.node);
-  // env.pop(); TODO: maximal hack
+  env.pop();
   return evaluation_result;
 };
 
@@ -406,6 +415,8 @@ function evaluate_index_access(node: IndexAccess) {
     throw new Error("Invalid 1D array index access!");
   }
 
+  // TODO: size(arr)[0] doesn't work.
+  console.log(arr, start_idx, end_idx);
   return is_2D && end_idx
     ? arr[start_idx - 1][end_idx - 1]
     : arr[start_idx - 1];
@@ -413,12 +424,13 @@ function evaluate_index_access(node: IndexAccess) {
 
 // For loop
 function evaluate_for_loop(node: ForLoop) {
-  env.extend([]);
   const start = evaluate(node.start_idx) as number;
   const end = evaluate(node.end_idx) as number;
 
-  for (let i = start; i < end; i++) {
+  env.assign_name(node.name, start, ANY); // TODO
+
+  for (let i = start; i <= end; i++) {
+    console.log(node.name, " = ", i, end);
     evaluate(node.body);
   }
-  env.pop();
 }

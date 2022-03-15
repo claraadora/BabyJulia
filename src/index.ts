@@ -32,13 +32,6 @@ function pretty_print(value: Value | void) {
   );
 }
 
-const make_block = (node: Node): Block => {
-  return {
-    type: "Block",
-    node,
-  };
-};
-
 function main() {
   const file_name = argv[3]; // TODO: brittle
   const program = fs.readFileSync(file_name, "utf8");
@@ -46,9 +39,10 @@ function main() {
   const parsed_program = parse(program);
   sanitize(parsed_program);
 
+  console.log(JSON.stringify(parsed_program, null, 2));
+
   try {
-    const block = make_block(parsed_program);
-    const evaluated_program = evaluate(block);
+    const evaluated_program = evaluate(parsed_program);
     pretty_print(evaluated_program);
   } catch (err) {
     console.log(err.message);

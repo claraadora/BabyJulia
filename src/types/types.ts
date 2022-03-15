@@ -26,7 +26,7 @@ export interface ExpressionSequence {
 
 export interface Block {
   type: "Block";
-  node: Node;
+  node: ExpressionSequence | ForLoop;
 }
 
 export type Expression =
@@ -85,7 +85,7 @@ export interface FunctionDefinition {
   type: "FunctionDefinition";
   name: string;
   params: Parameter[];
-  body: ExpressionSequence;
+  body: Block;
   return_type: string | null;
 }
 
@@ -147,7 +147,7 @@ export interface VarValAndType {
 }
 
 export interface FuncValAndType {
-  value: ExpressionSequence | null | Function;
+  value: Block | null | Function;
   param_types: string[];
   param_names: string[];
   return_type: string | null;

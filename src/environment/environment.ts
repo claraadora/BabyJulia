@@ -1,4 +1,5 @@
 import {
+  Block,
   Expression,
   FuncValAndType,
   is_declaration,
@@ -56,7 +57,7 @@ export class EnvStack {
 
   assign_fname(
     name: string,
-    value: ExpressionSequence | Function,
+    value: Block | Function,
     param_types: string[],
     param_names: string[],
     return_type: string,
@@ -120,7 +121,7 @@ class EnvFrame {
 
   assign_fname(
     name: string,
-    value: ExpressionSequence | Function,
+    value: Block | Function,
     param_types: string[],
     param_names: string[],
     return_type: string,

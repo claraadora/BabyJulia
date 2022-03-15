@@ -7,6 +7,7 @@ const LIST_OF_BUILT_IN_TYPES_WITH_THEIR_PARENTS: [string, string][] = [
   ["Bool", "Integer"],
   ["Signed", "Integer"],
   ["Int64", "Signed"],
+  ["Vector", "Any"],
 ];
 
 export class TypeGraph {
