@@ -96,7 +96,11 @@ NAME: ('a' ..'z' | 'A' ..'Z' | '_') (
 		| '_'
 		| '0' ..'9'
 	)*;
-WHITESPACE: [ \r\t]+ -> skip;
+
+SKIP_: (WHITESPACE | COMMENT) -> skip;
+WHITESPACE: [ \r\t]+;
+COMMENT: '#' ~[\r\n\f]*;
+
 NEWLINE: ('\r'? '\n' | '\r')+;
 ASSIGN: '=';
 
