@@ -36,7 +36,8 @@ export type Expression =
   | PrintExpression
   | BinaryExpression
   | Arr
-  | IndexAccess;
+  | IndexAccess
+  | ForLoop;
 
 export interface NumberLiteral {
   type: "NumberLiteral";
@@ -163,6 +164,15 @@ export interface IndexAccess {
   name: string;
   start_idx: Expression;
   end_idx: Expression | null;
+}
+
+export interface ForLoop {
+  type: "ForLoop";
+  var: string;
+  arr: Expression | null;
+  start_idx: Expression | null;
+  end_idx: Expression | null;
+  body: ExpressionSequence;
 }
 
 // Type guards

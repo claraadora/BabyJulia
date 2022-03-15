@@ -28,6 +28,7 @@ import {
   TwoDArrContext,
   ColContext,
   IndexAccessContext,
+  ForLoopContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -63,6 +64,7 @@ import {
   PrintExpression,
   Arr,
   IndexAccess,
+  ForLoop,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -332,6 +334,24 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       name: ctx._name.text!,
       start_idx: ctx._startIdx.accept(this) as Expression,
       end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
+    };
+  }
+
+  // For loop
+  visitForLoop(temp_ctx: ForLoopContext): ForLoop {
+    const ctx = temp_ctx.forLoopStmt();
+
+    // Get body.
+    const body_ctx = ctx.body();
+    const body = this.visitExprSequence(body_ctx.exprSequence());
+
+    return {
+      type: "ForLoop",
+      var: ctx._var.text!,
+      arr: (ctx._arr?.accept(this) as Expression) ?? null,
+      start_idx: (ctx._startIdx?.accept(this) as Expression) ?? null,
+      end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
+      body: body,
     };
   }
 
