@@ -8,6 +8,7 @@
     "chalk": "4.1.0",
     "fs": "^0.0.1-security",
     "lodash": "^4.17.21",
+    "node-glob": "^1.2.0",
     "process": "^0.11.10",
     "typescript": "^4.5.5"
   },
@@ -28,6 +29,7 @@
     "build": "tsc",
     "b": "tsc",
     "eval": "node dist/index.js {0}",
-    "e": "node dist/index.js {0}"
+    "e": "node dist/index.js {0}",
+    "t": "node scripts/test.js"
   }
 }

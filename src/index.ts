@@ -2,23 +2,9 @@ import { parse } from "./parser/parser";
 import * as fs from "fs";
 import { argv } from "process";
 import { evaluate } from "./evaluator/evaluator";
+import { sanitize } from "./sanitize";
 import * as _ from "lodash";
 import { Block, Node, Value } from "./types/types";
-
-function sanitize(node: any) {
-  if (!_.isObject(node)) {
-    return;
-  }
-
-  for (let key in node) {
-    if (_.isArray(node[key])) {
-      node[key] = node[key].filter((val: any) => val);
-      node[key].forEach((val: any) => sanitize(val));
-    } else {
-      sanitize(node[key]);
-    }
-  }
-}
 
 function pretty_print(value: Value | void) {
   const tabs = typeof value === typeof {} && !Array.isArray(value) ? 1 : 0;

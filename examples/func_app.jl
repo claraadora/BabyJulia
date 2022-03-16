@@ -8,4 +8,4 @@ function f()
     end
     return g()
 end
-f()
+f() # 3
