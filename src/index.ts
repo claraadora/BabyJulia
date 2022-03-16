@@ -39,8 +39,6 @@ function main() {
   const parsed_program = parse(program);
   sanitize(parsed_program);
 
-  console.log(JSON.stringify(parsed_program, null, 2));
-
   try {
     const evaluated_program = evaluate(parsed_program);
     pretty_print(evaluated_program);

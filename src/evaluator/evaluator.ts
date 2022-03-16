@@ -416,7 +416,6 @@ function evaluate_index_access(node: IndexAccess) {
   }
 
   // TODO: size(arr)[0] doesn't work.
-  console.log(arr, start_idx, end_idx);
   return is_2D && end_idx
     ? arr[start_idx - 1][end_idx - 1]
     : arr[start_idx - 1];
@@ -427,10 +426,8 @@ function evaluate_for_loop(node: ForLoop) {
   const start = evaluate(node.start_idx) as number;
   const end = evaluate(node.end_idx) as number;
 
-  env.assign_name(node.name, start, ANY); // TODO
-
   for (let i = start; i <= end; i++) {
-    console.log(node.name, " = ", i, end);
+    env.assign_name(node.name, i, ANY);
     evaluate(node.body);
   }
 }
