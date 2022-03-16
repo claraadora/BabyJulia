@@ -30,7 +30,6 @@ function matrix_mult(A,B)
             println(sum)
         end
     end
-    return sum 
 end
 
 matrix_mult(mat_A, mat_B) # [4 6; 4 6]

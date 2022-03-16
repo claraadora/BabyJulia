@@ -41,7 +41,7 @@ export class TypeGraph {
   // Create and add node with name `node_name` and parent `parent_name`.
   add_node(node_name: string, parent_name: string = "Any") {
     if (node_name in this.node_map) {
-      throw new Error("Type already exists in the graph.");
+      throw new Error(`Type ${node_name} already exists in the graph.`);
     }
 
     if (!(parent_name in this.node_map)) {

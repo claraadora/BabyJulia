@@ -5,9 +5,10 @@ const parser = require('../dist/parser/parser');
 const evaluator = require('../dist/evaluator/evaluator');
 
 glob('examples/*.jl', (err, files) => {
+  // For every example file, construct a [test_file, expected_output_file]
   const suite = files.map(file => {
-    const expected_file = file.match(/^examples\/(.+)\.jl$/);
-    return [file, `examples/${expected_file[1]}_expected.txt`];
+    const test_name = file.match(/^examples\/(.+)\.jl$/);
+    return [file, `examples/${test_name[1]}_expected.txt`];
   });
 
   for (const [file, expected_file] of suite) {
@@ -29,7 +30,7 @@ glob('examples/*.jl', (err, files) => {
         throw new Error(`test ${file} output not the same :(`);
       }
     } catch (e) {
-      console.log(`error: ${e}`)
+      console.log(`${e}`)
       console.log(`test ${file} failed :(`);
     }
   }

@@ -39,4 +39,4 @@ println(setMood(julia, happy))
 println(setMood(profIlya, happy))
 
 println(setMood(julia, sad))
-println(setMood(profIlya, sad))
+setMood(profIlya, sad)
