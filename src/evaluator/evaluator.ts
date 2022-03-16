@@ -30,6 +30,7 @@ import {
   ForLoop,
   is_for_loop,
   Block,
+  is_string,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -42,9 +43,7 @@ const type_graph = new TypeGraph();
 let env = new EnvStack();
 env.setup();
 
-const obj_to_runtime_types: {
-  [objref: string]: string;
-} = {};
+const obj_to_runtime_types = new Map();
 
 export const evaluate = (node: Node): Value | void => {
   switch (node?.type) {
@@ -120,7 +119,7 @@ const get_runtime_type = (value: any) => {
     case typeof "string":
       return "String";
     case typeof {}:
-      return obj_to_runtime_types[value];
+      return obj_to_runtime_types.get(value);
     default:
       throw new Error("Can't find type!");
   }
@@ -256,7 +255,11 @@ function construct(name: string, arg_vals: (Primitive | Object)[]) {
     throw new Error("Invalid arguments to constructor!");
 
   const func = funcValAndType.value as Function;
-  return func(...arg_vals);
+  const obj = func(...arg_vals);
+
+  // Update obj runtime type.
+  obj_to_runtime_types.set(obj, name);
+  return obj;
 }
 
 function apply(name: string, arg_vals: (Primitive | Object)[]) {
@@ -333,11 +336,19 @@ const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
 };
 
 // Binary expression.
-const evaluate_binary_expression = (node: BinaryExpression): number => {
+const evaluate_binary_expression = (
+  node: BinaryExpression
+): number | string => {
   const left = evaluate(node.left);
   const right = evaluate(node.right);
 
-  if (!is_number(left) || !is_number(right)) {
+  // String and String
+  if (is_string(left) && is_string(right) && node.operator === "*") {
+    return left + "" + right;
+  }
+
+  // Number and Number
+  if (!(is_number(left) && is_number(right))) {
     throw new Error("Invalid binary expression operand type(s)");
   }
 
