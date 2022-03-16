@@ -95,13 +95,8 @@ const scan_out_names = (node: ForLoop | ExpressionSequence) => {
     return node.expressions
       .filter((expr) => is_declaration(expr))
       .map(
-        (
-          expr:
-            | FunctionDefinition
-            | VariableDefinition
-            | StructDefinition
-            | ForLoop
-        ) => expr.name
+        (expr: FunctionDefinition | VariableDefinition | StructDefinition) =>
+          expr.name
       );
   }
 };
@@ -133,7 +128,7 @@ const get_runtime_type = (value: any) => {
 
 // Block.
 const evaluate_block = (node: Block) => {
-  env.extend(scan_out_names(node.node)); // TODO: fix
+  env.extend(scan_out_names(node.node));
   const evaluation_result = evaluate(node.node);
   env.pop();
   return evaluation_result;
