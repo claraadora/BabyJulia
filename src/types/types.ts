@@ -218,3 +218,6 @@ export const is_func_val_and_type = (value: any): value is FuncValAndType =>
 
 export const is_var_val_and_type = (value: any): value is VarValAndType =>
   typeof value === typeof {} && "value" in value && "type" in value;
+
+export const is_string = (value: any): value is string =>
+  typeof value === typeof "string";
