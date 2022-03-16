@@ -28,6 +28,7 @@ import {
   TwoDArrContext,
   ColContext,
   IndexAccessContext,
+  ForLoopContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -63,6 +64,8 @@ import {
   PrintExpression,
   Arr,
   IndexAccess,
+  ForLoop,
+  Block,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -149,7 +152,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
     // Get body.
     const body_ctx = ctx.body();
-    const body = this.visitExprSequence(body_ctx.exprSequence());
+    const body = wrap_in_block(this.visitExprSequence(body_ctx.exprSequence()));
 
     return {
       type: "FunctionDefinition",
@@ -335,6 +338,23 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     };
   }
 
+  // For loop
+  visitForLoop(temp_ctx: ForLoopContext): Node {
+    const ctx = temp_ctx.forLoopStmt();
+
+    // Get body.
+    const body_ctx = ctx.body();
+    const body = this.visitExprSequence(body_ctx.exprSequence());
+
+    return wrap_in_block({
+      type: "ForLoop",
+      name: ctx._name.text!,
+      start_idx: (ctx._startIdx?.accept(this) as Expression) ?? null,
+      end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
+      body: body,
+    });
+  }
+
   // ANTLR things
   visit(tree: ParseTree): Node {
     return tree.accept(this);
@@ -349,10 +369,17 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 }
 
+function wrap_in_block(node: ForLoop | ExpressionSequence): Block {
+  return {
+    type: "Block",
+    node,
+  };
+}
+
 function convertSource(prog: ProgramContext): Node {
   const expressionSeq = prog.exprSequence();
   const generator = new NodeGenerator();
-  return expressionSeq.accept(generator);
+  return wrap_in_block(expressionSeq.accept(generator) as ExpressionSequence);
 }
 
 export function parse(source: string) {

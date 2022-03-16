@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { argv } from "process";
 import { evaluate } from "./evaluator/evaluator";
 import * as _ from "lodash";
-import { Value } from "./types/types";
+import { Block, Node, Value } from "./types/types";
 
 function sanitize(node: any) {
   if (!_.isObject(node)) {

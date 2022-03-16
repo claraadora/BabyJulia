@@ -7,6 +7,8 @@ export type Node =
   | Parameter
   | StructField
   | ReturnStatement
+  | Block
+  | ForLoop
   | void;
 
 // Commons
@@ -20,6 +22,11 @@ export interface Program {
 export interface ExpressionSequence {
   type: "ExpressionSequence";
   expressions: Array<Expression>;
+}
+
+export interface Block {
+  type: "Block";
+  node: ExpressionSequence | ForLoop;
 }
 
 export type Expression =
@@ -36,7 +43,8 @@ export type Expression =
   | PrintExpression
   | BinaryExpression
   | Arr
-  | IndexAccess;
+  | IndexAccess
+  | ForLoop;
 
 export interface NumberLiteral {
   type: "NumberLiteral";
@@ -77,7 +85,7 @@ export interface FunctionDefinition {
   type: "FunctionDefinition";
   name: string;
   params: Parameter[];
-  body: ExpressionSequence;
+  body: Block;
   return_type: string | null;
 }
 
@@ -139,7 +147,7 @@ export interface VarValAndType {
 }
 
 export interface FuncValAndType {
-  value: ExpressionSequence | null | Function;
+  value: Block | null | Function;
   param_types: string[];
   param_names: string[];
   return_type: string | null;
@@ -165,6 +173,14 @@ export interface IndexAccess {
   end_idx: Expression | null;
 }
 
+export interface ForLoop {
+  type: "ForLoop";
+  name: string;
+  start_idx: Expression;
+  end_idx: Expression;
+  body: ExpressionSequence;
+}
+
 // Type guards
 export const is_primitive = (value: any): boolean => Object(value) !== value;
 
@@ -178,6 +194,9 @@ export const is_function_definition = (
 
 export const is_struct_definition = (node: Node): node is StructDefinition =>
   node?.type === "StructDefinition";
+
+export const is_for_loop = (node: Node): node is ForLoop =>
+  node?.type === "ForLoop";
 
 export const is_declaration = (
   node: Node

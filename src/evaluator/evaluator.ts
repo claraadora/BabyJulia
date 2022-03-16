@@ -27,6 +27,9 @@ import {
   Value,
   is_func_val_and_type,
   is_var_val_and_type,
+  ForLoop,
+  is_for_loop,
+  Block,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -45,6 +48,8 @@ const obj_to_runtime_types: {
 
 export const evaluate = (node: Node): Value | void => {
   switch (node?.type) {
+    case "Block":
+      return evaluate_block(node);
     case "ExpressionSequence":
       return evaluate_sequence(node);
     case "NumberLiteral":
@@ -77,17 +82,23 @@ export const evaluate = (node: Node): Value | void => {
       return evaluate_array(node);
     case "IndexAccess":
       return evaluate_index_access(node);
+    case "ForLoop":
+      return evaluate_for_loop(node);
     default:
   }
 };
 
-const scan_out_names = (node: ExpressionSequence) => {
-  return node.expressions
-    .filter((expr) => is_declaration(expr))
-    .map(
-      (expr: FunctionDefinition | VariableDefinition | StructDefinition) =>
-        expr.name
-    );
+const scan_out_names = (node: ForLoop | ExpressionSequence) => {
+  if (node.type === "ForLoop") {
+    return [node.name];
+  } else {
+    return node.expressions
+      .filter((expr) => is_declaration(expr))
+      .map(
+        (expr: FunctionDefinition | VariableDefinition | StructDefinition) =>
+          expr.name
+      );
+  }
 };
 
 const list_of_values = (expressions: Expression[]): (Primitive | Object)[] => {
@@ -96,6 +107,10 @@ const list_of_values = (expressions: Expression[]): (Primitive | Object)[] => {
 
 const get_runtime_type = (value: any) => {
   const type = typeof value;
+
+  if (Array.isArray(value)) {
+    return "Vector";
+  }
 
   switch (type) {
     case typeof 1:
@@ -111,11 +126,16 @@ const get_runtime_type = (value: any) => {
   }
 };
 
+// Block.
+const evaluate_block = (node: Block) => {
+  env.extend(scan_out_names(node.node));
+  const evaluation_result = evaluate(node.node);
+  env.pop();
+  return evaluation_result;
+};
+
 // Expressions.
 const evaluate_sequence = (node: ExpressionSequence) => {
-  // Extend environment.
-  env.extend(scan_out_names(node));
-
   // Evaluate expressions.
   const expressions = node.expressions;
   let last_evaluated_expr;
@@ -127,10 +147,6 @@ const evaluate_sequence = (node: ExpressionSequence) => {
       return get_evaluated_return_value(last_evaluated_expr);
     }
   }
-
-  // Pop environment.
-  env.pop();
-
   return last_evaluated_expr;
 };
 
@@ -394,7 +410,19 @@ function evaluate_index_access(node: IndexAccess) {
     throw new Error("Invalid 1D array index access!");
   }
 
+  // TODO: size(arr)[0] doesn't work.
   return is_2D && end_idx
     ? arr[start_idx - 1][end_idx - 1]
     : arr[start_idx - 1];
+}
+
+// For loop
+function evaluate_for_loop(node: ForLoop) {
+  const start = evaluate(node.start_idx) as number;
+  const end = evaluate(node.end_idx) as number;
+
+  for (let i = start; i <= end; i++) {
+    env.assign_name(node.name, i, ANY);
+    evaluate(node.body);
+  }
 }

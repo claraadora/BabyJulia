@@ -15,7 +15,7 @@ expr:
 	| returnStmt	# ReturnStatement
 	| printExpr		# PrintExpression
 	| array			# Arr
-	// | forStmt													# ForLoop
+	| forLoopStmt												# ForLoop
 	| <assoc = right> left = expr operator = POW right = expr	# Power
 	| left = expr operator = (MUL | DIV) right = expr			# MultDiv
 	| left = expr operator = (ADD | SUB) right = expr			# AddSub
@@ -76,8 +76,9 @@ col: expr;
 idxAccess:
 	name = NAME '[' startIdx = expr (',' endIdx = expr)? ']';
 
-// forStmt: 'for' var = NAME ( 'in' | ASSIGN ) (arr = NAME | (start = expr ':' end = expr)) NEWLINE
-// exprSequence NEWLINE 'end';
+forLoopStmt: 'for' name = NAME ( ('in' arr = expr) | 
+	('in' | ASSIGN) (startIdx = expr ':' endIdx = expr) )
+	NEWLINE body NEWLINE 'end';
 
 // Lexer rules bin ops
 POW: '^';
