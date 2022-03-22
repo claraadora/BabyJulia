@@ -6,14 +6,14 @@ struct Cat <: Mammal
     isFemale::Bool
 end 
 
-struct Human <: Mammal
+struct Woman <: Mammal
     name::String
     height::Int64
     isAlive::Bool	
 end
 
 kitty = Cat("Kitty", 1, true)
-obama = Human("Michelle Obama", 180, true)
+obama = Woman("Michelle Obama", 180, true)
 
 println(kitty.name)
 println(kitty.age)

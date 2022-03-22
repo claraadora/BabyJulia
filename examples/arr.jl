@@ -11,3 +11,4 @@ println(D) # [[7,8], [9,10]]
 println(D[1,2]) # 8
 size(D)
 D
+# expected: [[7,8], [9,10]]

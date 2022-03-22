@@ -1,7 +1,7 @@
 sum = 5
 new = 6
 for i = 2:new
-    println(sum) # 5,8,11,14
+    println(sum) # 5,8,11,14,17
     sum = sum + 3
 end
-sum # 17
+sum # 20

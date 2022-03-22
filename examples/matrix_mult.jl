@@ -6,7 +6,8 @@ mat_B = [1 2; 3 4]
 # | 1 1 |   | 3 4 |
 
 # mat_A x mat_B
-# | 4 6 4 6 |
+# | 4 6 |
+# | 4 6 |
 
 function matrix_mult(A,B)
     sum = 0
@@ -29,7 +30,6 @@ function matrix_mult(A,B)
             println(sum)
         end
     end
-    return sum 
 end
 
-matrix_mult(mat_A, mat_B) # [ 4 6 4 6 ]
+matrix_mult(mat_A, mat_B) # [4 6; 4 6]
