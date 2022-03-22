@@ -472,8 +472,12 @@ const evaluate_conditional_expression = (node: ConditionalExpression): Expressio
   const consequent = evaluate(node.consequent) as Expression;
   const alternative = evaluate(node.alternative) as Expression;
   
-  if (get_runtime_type(consequent) !== get_runtime_type(alternative)) {
-    console.log("Type unstable!");
+  const consequent_runtime_type = get_runtime_type(consequent);
+  const alternative_runtime_type = get_runtime_type(alternative);
+  if (consequent_runtime_type !== alternative_runtime_type) {
+    console.log(`Type unstable! 
+      consequent ${consequent} is of type ${consequent_runtime_type},
+      whereas alternative ${alternative} is of type ${alternative_runtime_type}`);
   }
 
   return evaluate(node.predicate) 
