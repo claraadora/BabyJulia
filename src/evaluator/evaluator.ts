@@ -301,6 +301,13 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
   const env_to_restore = env;
   env = func.env_stack;
   const eval_result = evaluate(func.value as Node);
+
+  // if function has atype, check runtime type of eval_result against the func.atype
+  const eval_result_runtime_type = get_runtime_type(eval_result);
+  if (func.return_type && (func.return_type !== eval_result_runtime_type)) {
+    throw new Error(`The atype of function ${name} is ${func.return_type}, but it returns value of type ${eval_result_runtime_type}`);
+  }
+
   env = env_to_restore;
   return eval_result;
 }
