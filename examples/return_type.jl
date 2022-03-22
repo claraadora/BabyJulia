@@ -7,5 +7,5 @@ function is_not_one(x)::String
   return x != 1
 end
 
-is_one(1)
-is_not_one(1)
+println(is_one(1)) # true
+is_not_one(1) # Error: The atype of function is_not_one is String, but it returns value of type Bool

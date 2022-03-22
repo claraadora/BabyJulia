@@ -7,5 +7,5 @@ function g(x)
   return x < y ? x : y
 end
 
-println(g(1)) 
-println(g(5)) 
+println(g(1)) # 1
+println(g(5)) # 3

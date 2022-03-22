@@ -482,9 +482,9 @@ const evaluate_conditional_expression = (node: ConditionalExpression): Expressio
   const consequent_runtime_type = get_runtime_type(consequent);
   const alternative_runtime_type = get_runtime_type(alternative);
   if (consequent_runtime_type !== alternative_runtime_type) {
-    console.log(`Type unstable! 
-      consequent ${consequent} is of type ${consequent_runtime_type},
-      whereas alternative ${alternative} is of type ${alternative_runtime_type}`);
+    console.log(`Type unstable!
+    Consequent ${consequent} is of type ${consequent_runtime_type},
+    whereas alternative ${alternative} is of type ${alternative_runtime_type}`);
   }
 
   // If predicate doesn't return a boolean, throw error
