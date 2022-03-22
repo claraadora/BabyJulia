@@ -1,8 +1,11 @@
-function id(x)
-  return x == 1 ? 100 : "no one"
+function is_one(x)
+  return x == 1
 end
 
-println(id(1))
-println(id(100))
-println(id("hi"))
-println(id(true))
+function f(x)
+  y = is_one(x) ? x * 2 : "x + 2"
+  return y
+end
+
+println(f(1)) # 1
+println(f(5)) # x + 2

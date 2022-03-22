@@ -469,7 +469,14 @@ const evaluate_relational_expression = (node: RelationalExpression): boolean => 
 
 // Conditional expression.
 const evaluate_conditional_expression = (node: ConditionalExpression): Expression => {
+  const consequent = evaluate(node.consequent) as Expression;
+  const alternative = evaluate(node.alternative) as Expression;
+  
+  if (get_runtime_type(consequent) !== get_runtime_type(alternative)) {
+    console.log("Type unstable!");
+  }
+
   return evaluate(node.predicate) 
-    ? evaluate(node.consequent) as Expression
-    : evaluate(node.alternative) as Expression;
+    ? consequent
+    : alternative;
 };
