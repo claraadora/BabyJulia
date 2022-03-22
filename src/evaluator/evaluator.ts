@@ -33,6 +33,7 @@ import {
   is_string,
   RelationalExpression,
   ConditionalExpression,
+  is_float,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -119,7 +120,7 @@ const get_runtime_type = (value: any) => {
 
   switch (type) {
     case typeof 1:
-      return "Int64";
+      return is_float(value) ? "Float64" : "Int64";
     case typeof true:
       return "Bool";
     case typeof "string":
@@ -156,7 +157,7 @@ const evaluate_sequence = (node: ExpressionSequence) => {
 };
 
 const evaluate_number_literal = (node: NumberLiteral): number => {
-  return parseInt(node.value);
+  return is_float(node.value) ? parseFloat(node.value) : parseInt(node.value);
 };
 
 const evaluate_string_literal = (node: StringLiteral): string => {
