@@ -19,6 +19,8 @@ expr:
 	| <assoc = right> left = expr operator = POW right = expr	# Power
 	| left = expr operator = (MUL | DIV) right = expr			# MultDiv
 	| left = expr operator = (ADD | SUB) right = expr			# AddSub
+  | left = expr operator = (EQ | NEQ | GT | GTE | LT | LTE) right = expr			# RelationalExpression
+  | predicate = expr '?' consequent = expr ':' alternative = expr # ConditionalExpression
 	| NUMBER													# Number
 	| '(' inner = expr ')'										# Parentheses
 	| STRING													# String
@@ -86,6 +88,12 @@ MUL: '*';
 DIV: '/';
 ADD: '+';
 SUB: '-';
+EQ: '==';
+NEQ: '!=';
+GT: '>';
+GTE: '>=';
+LT: '<';
+LTE: '<=';
 
 NUMBER: [0-9]+;
 BOOL: 'true' | 'false';

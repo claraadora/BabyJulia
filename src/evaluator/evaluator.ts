@@ -31,6 +31,8 @@ import {
   is_for_loop,
   Block,
   is_string,
+  RelationalExpression,
+  ConditionalExpression,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -83,6 +85,10 @@ export const evaluate = (node: Node): Value | void => {
       return evaluate_index_access(node);
     case "ForLoop":
       return evaluate_for_loop(node);
+    case "RelationalExpression":
+      return evaluate_relational_expression(node);
+    case "ConditionalExpression":
+      return evaluate_conditional_expression(node);
     default:
   }
 };
@@ -437,3 +443,33 @@ function evaluate_for_loop(node: ForLoop) {
     evaluate(node.body);
   }
 }
+
+// Relational expression.
+const evaluate_relational_expression = (node: RelationalExpression): boolean => {
+  const left = evaluate(node.left);
+  const right = evaluate(node.right);
+
+  switch (node.operator) {
+    case "==":
+      return left === right;
+    case "!=":
+      return left !== right;
+    case ">":
+      return left > right;
+    case ">=":
+      return left >= right;
+    case "<":
+      return left < right;
+    case "<=":
+      return left <= right;
+    default:
+      throw new Error("Invalid relational expression!");
+  }
+};
+
+// Conditional expression.
+const evaluate_conditional_expression = (node: ConditionalExpression): Expression => {
+  return evaluate(node.predicate) 
+    ? evaluate(node.consequent) as Expression
+    : evaluate(node.alternative) as Expression;
+};

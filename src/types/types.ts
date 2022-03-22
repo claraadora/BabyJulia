@@ -44,7 +44,9 @@ export type Expression =
   | BinaryExpression
   | Arr
   | IndexAccess
-  | ForLoop;
+  | ForLoop
+  | RelationalExpression
+  | ConditionalExpression;
 
 export interface NumberLiteral {
   type: "NumberLiteral";
@@ -179,6 +181,20 @@ export interface ForLoop {
   start_idx: Expression;
   end_idx: Expression;
   body: ExpressionSequence;
+}
+
+export interface ConditionalExpression {
+  type: "ConditionalExpression";
+  predicate: Expression;
+  consequent: Expression;
+  alternative: Expression;
+}
+
+export interface RelationalExpression {
+  type: "RelationalExpression";
+  operator: string;
+  left: Expression;
+  right: Expression;
 }
 
 // Type guards
