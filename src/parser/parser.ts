@@ -29,6 +29,8 @@ import {
   ColContext,
   IndexAccessContext,
   ForLoopContext,
+  RelationalExpressionContext,
+  ConditionalExpressionContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -66,6 +68,8 @@ import {
   IndexAccess,
   ForLoop,
   Block,
+  RelationalExpression,
+  ConditionalExpression,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -353,6 +357,24 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
       body: body,
     });
+  }
+
+  visitRelationalExpression(ctx: RelationalExpressionContext): RelationalExpression {
+    return {
+      type: "RelationalExpression",
+      operator: ctx._operator.text!,
+      left: this.visit(ctx._left) as Expression,
+      right: this.visit(ctx._right) as Expression,
+    };
+  }
+
+  visitConditionalExpression(ctx: ConditionalExpressionContext): ConditionalExpression {
+    return {
+      type: "ConditionalExpression",
+      predicate: this.visit(ctx._predicate) as Expression,
+      consequent: this.visit(ctx._consequent) as Expression,
+      alternative: this.visit(ctx._alternative) as Expression,
+    };
   }
 
   // ANTLR things

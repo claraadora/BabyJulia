@@ -31,6 +31,8 @@ import {
   is_for_loop,
   Block,
   is_string,
+  RelationalExpression,
+  ConditionalExpression,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph } from "../type_graph/type_graph";
@@ -83,6 +85,10 @@ export const evaluate = (node: Node): Value | void => {
       return evaluate_index_access(node);
     case "ForLoop":
       return evaluate_for_loop(node);
+    case "RelationalExpression":
+      return evaluate_relational_expression(node);
+    case "ConditionalExpression":
+      return evaluate_conditional_expression(node);
     default:
   }
 };
@@ -295,6 +301,13 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
   const env_to_restore = env;
   env = func.env_stack;
   const eval_result = evaluate(func.value as Node);
+
+  // if function has atype, check runtime type of eval_result against the func.atype
+  const eval_result_runtime_type = get_runtime_type(eval_result);
+  if (func.return_type !== ANY && (func.return_type !== eval_result_runtime_type)) {
+    throw new Error(`The atype of function ${name} is ${func.return_type}, but it returns value of type ${eval_result_runtime_type}`);
+  }
+
   env = env_to_restore;
   return eval_result;
 }
@@ -437,3 +450,52 @@ function evaluate_for_loop(node: ForLoop) {
     evaluate(node.body);
   }
 }
+
+// Relational expression.
+const evaluate_relational_expression = (node: RelationalExpression): boolean => {
+  const left = evaluate(node.left);
+  const right = evaluate(node.right);
+
+  switch (node.operator) {
+    case "==":
+      return left === right;
+    case "!=":
+      return left !== right;
+    case ">":
+      return left > right;
+    case ">=":
+      return left >= right;
+    case "<":
+      return left < right;
+    case "<=":
+      return left <= right;
+    default:
+      throw new Error("Invalid relational expression!");
+  }
+};
+
+// Conditional expression.
+const evaluate_conditional_expression = (node: ConditionalExpression): Expression => {
+  const consequent = evaluate(node.consequent) as Expression;
+  const alternative = evaluate(node.alternative) as Expression;
+  
+  // TODO: abstract out
+  const consequent_runtime_type = get_runtime_type(consequent);
+  const alternative_runtime_type = get_runtime_type(alternative);
+  if (consequent_runtime_type !== alternative_runtime_type) {
+    console.log(`Type unstable!
+    Consequent ${consequent} is of type ${consequent_runtime_type},
+    whereas alternative ${alternative} is of type ${alternative_runtime_type}`);
+  }
+
+  // If predicate doesn't return a boolean, throw error
+  const predicate = evaluate(node.predicate);
+  const predicate_runtime_type = get_runtime_type(predicate);
+  if (predicate_runtime_type !== "Bool") {
+    throw new Error(`Non-boolean (${predicate_runtime_type}) used in boolean context`);
+  }
+
+  return predicate
+    ? consequent
+    : alternative;
+};
