@@ -304,7 +304,7 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
 
   // if function has atype, check runtime type of eval_result against the func.atype
   const eval_result_runtime_type = get_runtime_type(eval_result);
-  if (func.return_type && (func.return_type !== eval_result_runtime_type)) {
+  if (func.return_type !== ANY && (func.return_type !== eval_result_runtime_type)) {
     throw new Error(`The atype of function ${name} is ${func.return_type}, but it returns value of type ${eval_result_runtime_type}`);
   }
 
@@ -487,7 +487,14 @@ const evaluate_conditional_expression = (node: ConditionalExpression): Expressio
       whereas alternative ${alternative} is of type ${alternative_runtime_type}`);
   }
 
-  return evaluate(node.predicate) 
+  // If predicate doesn't return a boolean, throw error
+  const predicate = evaluate(node.predicate);
+  const predicate_runtime_type = get_runtime_type(predicate);
+  if (predicate_runtime_type !== "Bool") {
+    throw new Error(`Non-boolean (${predicate_runtime_type}) used in boolean context`);
+  }
+
+  return predicate
     ? consequent
     : alternative;
 };
