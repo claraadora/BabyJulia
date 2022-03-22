@@ -479,6 +479,7 @@ const evaluate_conditional_expression = (node: ConditionalExpression): Expressio
   const consequent = evaluate(node.consequent) as Expression;
   const alternative = evaluate(node.alternative) as Expression;
   
+  // TODO: abstract out
   const consequent_runtime_type = get_runtime_type(consequent);
   const alternative_runtime_type = get_runtime_type(alternative);
   if (consequent_runtime_type !== alternative_runtime_type) {
