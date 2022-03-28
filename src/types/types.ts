@@ -221,8 +221,12 @@ export const is_declaration = (
   is_function_definition(node) ||
   is_struct_definition(node);
 
+// both int and float are considered number
 export const is_number = (value: any): value is number =>
   typeof value === typeof 1;
+
+export const is_float = (value: any): value is number =>
+  value % 1 !== 0;
 
 export const is_func_val_and_type = (value: any): value is FuncValAndType =>
   typeof value === typeof {} &&

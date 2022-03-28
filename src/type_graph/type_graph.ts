@@ -8,6 +8,8 @@ const LIST_OF_BUILT_IN_TYPES_WITH_THEIR_PARENTS: [string, string][] = [
   ["Signed", "Integer"],
   ["Int64", "Signed"],
   ["Vector", "Any"],
+  ["Float64", "AbstractFloat"],
+  ["AbstractFloat", "Real"],
 ];
 
 export class TypeGraph {
