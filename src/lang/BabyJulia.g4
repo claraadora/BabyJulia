@@ -27,15 +27,15 @@ expr:
 	| BOOL														# Boolean;
 
 // 1. Variable Definition
-varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
+varDef: name = NAME (INSTANCE_OF type = NAME | UNION)? ASSIGN expr;
 
 // 2. Function Definition
 funcDef:
 	'function' funcName = NAME '(' parameters? ')' (
-		INSTANCE_OF returnType = NAME
+		INSTANCE_OF returnType = NAME | UNION
 	)? NEWLINE body NEWLINE 'end';
 parameters: parameter (',' parameter)*;
-parameter: name = NAME (INSTANCE_OF type = NAME)?;
+parameter: name = NAME (INSTANCE_OF type = NAME | UNION)?;
 body: exprSequence;
 returnStmt: 'return' expr?;
 
@@ -50,7 +50,7 @@ structDef:
 
 structFields: (structField)*;
 
-structField: varName = NAME (INSTANCE_OF type = NAME)? NEWLINE;
+structField: varName = NAME (INSTANCE_OF type = NAME | UNION)? NEWLINE;
 
 // 5. Abstract Type Declaration
 absTypeDeclr:
@@ -105,6 +105,9 @@ NAME: ('a' ..'z' | 'A' ..'Z' | '_') (
 		| '_'
 		| '0' ..'9'
 	)*;
+
+UNION: 'Union' '{' ( TYPES )? '}';
+TYPES: (NAME) (',' NAME)*;
 
 SKIP_: (WHITESPACE | COMMENT) -> skip;
 WHITESPACE: [ \r\t]+;
