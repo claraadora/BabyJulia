@@ -26,7 +26,7 @@ export class EnvStack {
   setup() {
     this.extend(Object.keys(BUILT_IN_NAME_VALS));
     for (let [name, val] of Object.entries(BUILT_IN_NAME_VALS)) {
-      this.assign_name(name, val, ["any"]);
+      this.assign_name(name, val, ["Any"]);
     }
   }
 

@@ -31,7 +31,6 @@ import {
   ForLoopContext,
   RelationalExpressionContext,
   ConditionalExpressionContext,
-  UnionContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -71,9 +70,7 @@ import {
   Block,
   RelationalExpression,
   ConditionalExpression,
-  Primitive,
 } from "./../types/types";
-import { union } from "lodash";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
   // Expressions
