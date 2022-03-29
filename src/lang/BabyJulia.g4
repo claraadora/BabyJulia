@@ -4,27 +4,27 @@ grammar BabyJulia;
 program: exprSequence EOF;
 exprSequence: (expr (NEWLINE)* | NEWLINE)*;
 expr:
-	varDef			# VarDefinition
-	| funcDef		# FuncDefinition
-	| funcApp		# FuncApplication
-	| structDef		# StructDefinition
-	| fldAccess		# FieldAccess
-	| idxAccess		# IndexAccess
-	| absTypeDeclr	# AbstractTypeDeclaration
-	| identifier	# Name
-	| returnStmt	# ReturnStatement
-	| printExpr		# PrintExpression
-	| array			# Arr
-	| forLoopStmt												# ForLoop
-	| <assoc = right> left = expr operator = POW right = expr	# Power
-	| left = expr operator = (MUL | DIV) right = expr			# MultDiv
-	| left = expr operator = (ADD | SUB) right = expr			# AddSub
-  | left = expr operator = (EQ | NEQ | GT | GTE | LT | LTE) right = expr			# RelationalExpression
-  | predicate = expr '?' consequent = expr ':' alternative = expr # ConditionalExpression
-	| NUMBER													# Number
-	| '(' inner = expr ')'										# Parentheses
-	| STRING													# String
-	| BOOL														# Boolean;
+	varDef																	# VarDefinition
+	| funcDef																# FuncDefinition
+	| funcApp																# FuncApplication
+	| structDef																# StructDefinition
+	| fldAccess																# FieldAccess
+	| idxAccess																# IndexAccess
+	| absTypeDeclr															# AbstractTypeDeclaration
+	| identifier															# Name
+	| returnStmt															# ReturnStatement
+	| printExpr																# PrintExpression
+	| array																	# Arr
+	| forLoopStmt															# ForLoop
+	| <assoc = right> left = expr operator = POW right = expr				# Power
+	| left = expr operator = (MUL | DIV) right = expr						# MultDiv
+	| left = expr operator = (ADD | SUB) right = expr						# AddSub
+	| left = expr operator = (EQ | NEQ | GT | GTE | LT | LTE) right = expr	# RelationalExpression
+	| predicate = expr '?' consequent = expr ':' alternative = expr			# ConditionalExpression
+	| NUMBER																# Number
+	| '(' inner = expr ')'													# Parentheses
+	| STRING																# String
+	| BOOL																	# Boolean;
 
 // 1. Variable Definition
 varDef: name = NAME (INSTANCE_OF atype = type)? ASSIGN expr;
@@ -46,7 +46,16 @@ funcApp: fname = NAME '(' arguments? ')';
 
 // 4. Struct Definition
 structDef:
-	'struct' structName = NAME (SUBTYPE_OF supertype = type)? NEWLINE structFields? 'end';
+	'struct' structName = NAME (
+		'{' tv = NAME (SUBTYPE_OF tvparent = NAME)? '}'
+	)? (
+		SUBTYPE_OF super_type = NAME (
+			'{' (
+				(super_type_tv = NAME)
+				| ( SUBTYPE_OF super_type_tv_parent = NAME)
+			) '}'
+		)?
+	)? NEWLINE structFields? 'end';
 
 structFields: (structField)*;
 
@@ -78,13 +87,17 @@ col: expr;
 idxAccess:
 	name = NAME '[' startIdx = expr (',' endIdx = expr)? ']';
 
-forLoopStmt: 'for' name = NAME ( ('in' arr = expr) | 
-	('in' | ASSIGN) (startIdx = expr ':' endIdx = expr) )
-	NEWLINE body NEWLINE 'end';
+forLoopStmt:
+	'for' name = NAME (
+		('in' arr = expr)
+		| ('in' | ASSIGN) (startIdx = expr ':' endIdx = expr)
+	) NEWLINE body NEWLINE 'end';
 
 // Union types
-type: union | NAME;
-union: 'Union' '{' (NAME (',' NAME)*)? '}' ;  
+type: union | parametric | NAME;
+union: 'Union' '{' (NAME (',' NAME)*)? '}';
+parametric:
+	base = NAME '{' (tv = NAME)? (INSTANCE_OF tv_super = NAME)? '}';
 
 // Lexer rules bin ops
 POW: '^';
