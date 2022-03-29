@@ -31,6 +31,7 @@ import {
   ForLoopContext,
   RelationalExpressionContext,
   ConditionalExpressionContext,
+  TypeContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -134,12 +135,13 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   // Variable Definition
   visitVarDefinition(temp_ctx: VarDefinitionContext): VariableDefinition {
     const ctx = temp_ctx.varDef();
-    // accept(this)
+    const atypes = getTypes(ctx._atype);
+
     return {
       type: "VariableDefinition",
       name: ctx._name.text!,
       expr: ctx.expr().accept(this) as Expression,
-      atype: ctx._type?.text ?? null,
+      atypes: atypes.length == 0 ? null : atypes,
     };
   }
 
@@ -158,20 +160,25 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const body_ctx = ctx.body();
     const body = wrap_in_block(this.visitExprSequence(body_ctx.exprSequence()));
 
+    // Get return type(s).
+    const return_types = getTypes(ctx._returnType);
+
     return {
       type: "FunctionDefinition",
       name: ctx._funcName.text!,
       params,
       body,
-      return_type: ctx._returnType?.text ?? null,
+      return_types: return_types.length == 0 ? null : return_types,
     };
   }
 
   visitParameter(ctx: ParameterContext): Parameter {
+    const atypes = getTypes(ctx._atype);
+
     return {
       type: "Parameter",
       name: ctx._name.text!,
-      atype: ctx._type?.text ?? null,
+      atypes: atypes.length == 0 ? null : atypes,
     };
   }
 
@@ -214,19 +221,24 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       fields.push(fields_ctx?.getChild(i).accept(this) as StructField);
     }
 
+    // Get supertype name(s).
+    const super_type_names = getTypes(ctx._supertype);
+
     return {
       type: "StructDefinition",
       name: ctx._structName.text!,
-      super_type_name: ctx._supertype?.text ?? null,
+      super_type_names: super_type_names.length == 0 ? null : super_type_names,
       fields,
     };
   }
 
   visitStructField(ctx: StructFieldContext): StructField {
+    const atypes = getTypes(ctx._atype);
+
     return {
       type: "StructField",
       name: ctx._varName.text!,
-      atype: ctx._type?.text ?? null,
+      atypes: atypes.length == 0 ? null : atypes,
     };
   }
 
@@ -235,10 +247,12 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     temp_ctx: AbstractTypeDeclarationContext
   ): AbstractTypeDeclaration {
     const ctx = temp_ctx.absTypeDeclr();
+    const super_type_names = getTypes(ctx._supertype);
+
     return {
       type: "AbstractTypeDeclaration",
-      name: ctx._type.text!,
-      super_type_name: ctx._supertype?.text ?? null,
+      name: ctx.NAME().text!,
+      super_type_names: super_type_names.length == 0 ? null : super_type_names,
     };
   }
 
@@ -402,6 +416,18 @@ function convertSource(prog: ProgramContext): Node {
   const expressionSeq = prog.exprSequence();
   const generator = new NodeGenerator();
   return wrap_in_block(expressionSeq.accept(generator) as ExpressionSequence);
+}
+
+function getTypes(typeCtx: TypeContext): string[] {
+  const types = [] as string[];
+  if (typeCtx?.NAME()) {
+    types.push(typeCtx?.NAME()?.text!);
+  } else if (typeCtx?.union()) {
+    const union_types = typeCtx?.union()?.NAME();
+    union_types?.map((atype) => types.push(atype.text));
+  }
+
+  return types;
 }
 
 export function parse(source: string) {

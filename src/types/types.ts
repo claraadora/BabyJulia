@@ -79,7 +79,7 @@ export interface VariableDefinition {
   type: "VariableDefinition";
   name: string;
   expr: Expression;
-  atype: string | null;
+  atypes: string[] | null;
 }
 
 // Function Definition
@@ -88,13 +88,13 @@ export interface FunctionDefinition {
   name: string;
   params: Parameter[];
   body: Block;
-  return_type: string | null;
+  return_types: string[] | null;
 }
 
 export interface Parameter {
   type: "Parameter";
   name: string;
-  atype: string | null;
+  atypes: string[] | null;
 }
 
 export interface ReturnStatement {
@@ -114,21 +114,21 @@ export interface FunctionApplication {
 export interface StructDefinition {
   type: "StructDefinition";
   name: string;
-  super_type_name: string | null;
+  super_type_names: string[] | null;
   fields: StructField[];
 }
 
 export interface StructField {
   type: "StructField";
   name: string;
-  atype: string | null;
+  atypes: string[] | null;
 }
 
 // Abstract Type
 export interface AbstractTypeDeclaration {
   type: "AbstractTypeDeclaration";
   name: string;
-  super_type_name: string | null;
+  super_type_names: string[] | null;
 }
 
 // Print stmt
@@ -145,14 +145,14 @@ export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
   value: Value | Array<Value> | null | Function;
-  type: string;
+  types: string[];
 }
 
 export interface FuncValAndType {
   value: Block | null | Function;
   param_types: string[];
   param_names: string[];
-  return_type: string | null;
+  return_types: string[] | null;
   env_stack: EnvStack;
 }
 

@@ -27,15 +27,15 @@ expr:
 	| BOOL														# Boolean;
 
 // 1. Variable Definition
-varDef: name = NAME (INSTANCE_OF type = NAME)? ASSIGN expr;
+varDef: name = NAME (INSTANCE_OF atype = type)? ASSIGN expr;
 
 // 2. Function Definition
 funcDef:
 	'function' funcName = NAME '(' parameters? ')' (
-		INSTANCE_OF returnType = NAME
+		INSTANCE_OF returnType = type
 	)? NEWLINE body NEWLINE 'end';
 parameters: parameter (',' parameter)*;
-parameter: name = NAME (INSTANCE_OF type = NAME)?;
+parameter: name = NAME (INSTANCE_OF atype = type)?;
 body: exprSequence;
 returnStmt: 'return' expr?;
 
@@ -46,15 +46,15 @@ funcApp: fname = NAME '(' arguments? ')';
 
 // 4. Struct Definition
 structDef:
-	'struct' structName = NAME (SUBTYPE_OF supertype = NAME)? NEWLINE structFields? 'end';
+	'struct' structName = NAME (SUBTYPE_OF supertype = type)? NEWLINE structFields? 'end';
 
 structFields: (structField)*;
 
-structField: varName = NAME (INSTANCE_OF type = NAME)? NEWLINE;
+structField: varName = NAME (INSTANCE_OF atype = type)? NEWLINE;
 
 // 5. Abstract Type Declaration
 absTypeDeclr:
-	'abstract' 'type' type = NAME (SUBTYPE_OF supertype = NAME)? 'end';
+	'abstract' 'type' NAME (SUBTYPE_OF supertype = type)? 'end';
 
 // 6. Field Access
 fldAccess: objName = NAME '.' fieldName = NAME;
@@ -81,6 +81,10 @@ idxAccess:
 forLoopStmt: 'for' name = NAME ( ('in' arr = expr) | 
 	('in' | ASSIGN) (startIdx = expr ':' endIdx = expr) )
 	NEWLINE body NEWLINE 'end';
+
+// Union types
+type: union | NAME;
+union: 'Union' '{' (NAME (',' NAME)*)? '}' ;  
 
 // Lexer rules bin ops
 POW: '^';
