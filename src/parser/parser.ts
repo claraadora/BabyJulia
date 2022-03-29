@@ -139,7 +139,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       type: "VariableDefinition",
       name: ctx._name.text!,
       expr: ctx.expr().accept(this) as Expression,
-      atype: ctx._type?.text ?? null,
+      atype: ctx._atype?.text ?? null,
     };
   }
 
@@ -171,7 +171,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "Parameter",
       name: ctx._name.text!,
-      atype: ctx._type?.text ?? null,
+      atype: ctx._atype?.text ?? null,
     };
   }
 
@@ -226,7 +226,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     return {
       type: "StructField",
       name: ctx._varName.text!,
-      atype: ctx._type?.text ?? null,
+      atype: ctx._atype?.text ?? null,
     };
   }
 
@@ -237,7 +237,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const ctx = temp_ctx.absTypeDeclr();
     return {
       type: "AbstractTypeDeclaration",
-      name: ctx._type.text!,
+      name: ctx.NAME().text!,
       super_type_name: ctx._supertype?.text ?? null,
     };
   }

@@ -27,15 +27,15 @@ expr:
 	| BOOL														# Boolean;
 
 // 1. Variable Definition
-varDef: name = NAME (INSTANCE_OF type = NAME | UNION)? ASSIGN expr;
+varDef: name = NAME (INSTANCE_OF atype = type)? ASSIGN expr;
 
 // 2. Function Definition
 funcDef:
 	'function' funcName = NAME '(' parameters? ')' (
-		INSTANCE_OF returnType = NAME | UNION
+		INSTANCE_OF returnType = type
 	)? NEWLINE body NEWLINE 'end';
 parameters: parameter (',' parameter)*;
-parameter: name = NAME (INSTANCE_OF type = NAME | UNION)?;
+parameter: name = NAME (INSTANCE_OF atype = type)?;
 body: exprSequence;
 returnStmt: 'return' expr?;
 
@@ -46,15 +46,15 @@ funcApp: fname = NAME '(' arguments? ')';
 
 // 4. Struct Definition
 structDef:
-	'struct' structName = NAME (SUBTYPE_OF supertype = NAME)? NEWLINE structFields? 'end';
+	'struct' structName = NAME (SUBTYPE_OF supertype = type)? NEWLINE structFields? 'end';
 
 structFields: (structField)*;
 
-structField: varName = NAME (INSTANCE_OF type = NAME | UNION)? NEWLINE;
+structField: varName = NAME (INSTANCE_OF atype = type)? NEWLINE;
 
 // 5. Abstract Type Declaration
 absTypeDeclr:
-	'abstract' 'type' type = NAME (SUBTYPE_OF supertype = NAME)? 'end';
+	'abstract' 'type' NAME (SUBTYPE_OF supertype = type)? 'end';
 
 // 6. Field Access
 fldAccess: objName = NAME '.' fieldName = NAME;
@@ -106,8 +106,8 @@ NAME: ('a' ..'z' | 'A' ..'Z' | '_') (
 		| '0' ..'9'
 	)*;
 
-UNION: 'Union' '{' ( TYPES )? '}';
-TYPES: (NAME) (',' NAME)*;
+type: union | NAME;
+union: 'Union' '{' (type (',' type)*)? '}' ;
 
 SKIP_: (WHITESPACE | COMMENT) -> skip;
 WHITESPACE: [ \r\t]+;
