@@ -82,6 +82,10 @@ forLoopStmt: 'for' name = NAME ( ('in' arr = expr) |
 	('in' | ASSIGN) (startIdx = expr ':' endIdx = expr) )
 	NEWLINE body NEWLINE 'end';
 
+// Union types
+type: union | NAME;
+union: 'Union' '{' (NAME (',' NAME)*)? '}' ;  
+
 // Lexer rules bin ops
 POW: '^';
 MUL: '*';
@@ -105,9 +109,6 @@ NAME: ('a' ..'z' | 'A' ..'Z' | '_') (
 		| '_'
 		| '0' ..'9'
 	)*;
-
-type: union | NAME;
-union: 'Union' '{' (type (',' type)*)? '}' ;
 
 SKIP_: (WHITESPACE | COMMENT) -> skip;
 WHITESPACE: [ \r\t]+;
