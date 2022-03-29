@@ -31,6 +31,7 @@ import {
   ForLoopContext,
   RelationalExpressionContext,
   ConditionalExpressionContext,
+  TypeContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -134,15 +135,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   // Variable Definition
   visitVarDefinition(temp_ctx: VarDefinitionContext): VariableDefinition {
     const ctx = temp_ctx.varDef();
-
-    // Get atype(s).
-    const atypes = [] as string[];
-    if (ctx._atype?.NAME()) {
-      atypes.push(ctx._atype?.NAME()?.text!);
-    } else if (ctx._atype?.union()) {
-      const union_types = ctx._atype?.union()?.NAME();
-      union_types?.map((atype) => atypes.push(atype.text));
-    }
+    const atypes = getTypes(ctx._atype);
 
     return {
       type: "VariableDefinition",
@@ -168,13 +161,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const body = wrap_in_block(this.visitExprSequence(body_ctx.exprSequence()));
 
     // Get return type(s).
-    const return_types = [] as string[];
-    if (ctx._returnType?.NAME()) {
-      return_types.push(ctx._returnType?.NAME()?.text!);
-    } else if (ctx._returnType?.union()) {
-      const union_types = ctx._returnType?.union()?.NAME();
-      union_types?.map((return_type) => return_types.push(return_type.text));
-    }
+    const return_types = getTypes(ctx._returnType);
 
     return {
       type: "FunctionDefinition",
@@ -186,14 +173,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 
   visitParameter(ctx: ParameterContext): Parameter {
-    // Get atype(s).
-    const atypes = [] as string[];
-    if (ctx._atype?.NAME()) {
-      atypes.push(ctx._atype?.NAME()?.text!);
-    } else if (ctx._atype?.union()) {
-      const union_types = ctx._atype?.union()?.NAME();
-      union_types?.map((atype) => atypes.push(atype.text));
-    }
+    const atypes = getTypes(ctx._atype);
 
     return {
       type: "Parameter",
@@ -242,13 +222,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     }
 
     // Get supertype name(s).
-    const super_type_names = [] as string[];
-    if (ctx._supertype?.NAME()) {
-      super_type_names.push(ctx._supertype?.NAME()?.text!);
-    } else if (ctx._supertype?.union()) {
-      const union_types = ctx._supertype?.union()?.NAME();
-      union_types?.map((super_type_name) => super_type_names.push(super_type_name.text));
-    }
+    const super_type_names = getTypes(ctx._supertype);
 
     return {
       type: "StructDefinition",
@@ -259,14 +233,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   }
 
   visitStructField(ctx: StructFieldContext): StructField {
-    // Get atype(s).
-    const atypes = [] as string[];
-    if (ctx._atype?.NAME()) {
-      atypes.push(ctx._atype?.NAME()?.text!);
-    } else if (ctx._atype?.union()) {
-      const union_types = ctx._atype?.union()?.NAME();
-      union_types?.map((atype) => atypes.push(atype.text));
-    }
+    const atypes = getTypes(ctx._atype);
 
     return {
       type: "StructField",
@@ -280,14 +247,8 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     temp_ctx: AbstractTypeDeclarationContext
   ): AbstractTypeDeclaration {
     const ctx = temp_ctx.absTypeDeclr();
-    // Get supertype name(s).
-    const super_type_names = [] as string[];
-    if (ctx._supertype?.NAME()) {
-      super_type_names.push(ctx._supertype?.NAME()?.text!);
-    } else if (ctx._supertype?.union()) {
-      const union_types = ctx._supertype?.union()?.NAME();
-      union_types?.map((super_type_name) => super_type_names.push(super_type_name.text));
-    }
+    const super_type_names = getTypes(ctx._supertype);
+
     return {
       type: "AbstractTypeDeclaration",
       name: ctx.NAME().text!,
@@ -455,6 +416,18 @@ function convertSource(prog: ProgramContext): Node {
   const expressionSeq = prog.exprSequence();
   const generator = new NodeGenerator();
   return wrap_in_block(expressionSeq.accept(generator) as ExpressionSequence);
+}
+
+function getTypes(typeCtx: TypeContext): string[] {
+  const types = [] as string[];
+  if (typeCtx?.NAME()) {
+    types.push(typeCtx?.NAME()?.text!);
+  } else if (typeCtx?.union()) {
+    const union_types = typeCtx?.union()?.NAME();
+    union_types?.map((atype) => types.push(atype.text));
+  }
+
+  return types;
 }
 
 export function parse(source: string) {
