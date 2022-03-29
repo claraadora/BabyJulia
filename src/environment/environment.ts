@@ -26,7 +26,7 @@ export class EnvStack {
   setup() {
     this.extend(Object.keys(BUILT_IN_NAME_VALS));
     for (let [name, val] of Object.entries(BUILT_IN_NAME_VALS)) {
-      this.assign_name(name, val, "any");
+      this.assign_name(name, val, ["any"]);
     }
   }
 
@@ -50,9 +50,9 @@ export class EnvStack {
     return frame.get(name) as FuncValAndType[];
   }
 
-  assign_name(name: string, value: Primitive | Object, type: string) {
+  assign_name(name: string, value: Primitive | Object, types: string[]) {
     let frame = this.find_nearest_frame(name);
-    frame.assign_name(name, value, type);
+    frame.assign_name(name, value, types);
   }
 
   assign_fname(
@@ -60,7 +60,7 @@ export class EnvStack {
     value: Block | Function,
     param_types: string[],
     param_names: string[],
-    return_type: string,
+    return_types: string[],
     env_stack: EnvStack
   ) {
     let frame = this.find_nearest_frame(name);
@@ -69,7 +69,7 @@ export class EnvStack {
       value,
       param_types,
       param_names,
-      return_type,
+      return_types,
       env_stack
     );
   }
@@ -111,12 +111,12 @@ class EnvFrame {
     return this.name_to_vals[name];
   }
 
-  assign_name(name: string, value: Primitive | Object, type: string) {
+  assign_name(name: string, value: Primitive | Object, types: string[]) {
     let vnt_arr = this.get(name);
 
     // TODO: add checks here
-    if (vnt_arr.length === 0) vnt_arr.push({ value, type });
-    else vnt_arr[0] = { value, type };
+    if (vnt_arr.length === 0) vnt_arr.push({ value, types });
+    else vnt_arr[0] = { value, types };
   }
 
   assign_fname(
@@ -124,7 +124,7 @@ class EnvFrame {
     value: Block | Function,
     param_types: string[],
     param_names: string[],
-    return_type: string,
+    return_types: string[],
     env_stack: EnvStack
   ) {
     // TODO: add checks here
@@ -133,7 +133,7 @@ class EnvFrame {
       value,
       param_types,
       param_names,
-      return_type,
+      return_types,
       env_stack,
     });
   }

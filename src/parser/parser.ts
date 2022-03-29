@@ -31,6 +31,7 @@ import {
   ForLoopContext,
   RelationalExpressionContext,
   ConditionalExpressionContext,
+  UnionContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -70,8 +71,9 @@ import {
   Block,
   RelationalExpression,
   ConditionalExpression,
+  Primitive,
 } from "./../types/types";
-import { Context } from "vm";
+import { union } from "lodash";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
   // Expressions
@@ -140,14 +142,9 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const atypes = [] as string[];
     if (ctx._atype?.NAME()) {
       atypes.push(ctx._atype?.NAME()?.text!);
-    } else if (ctx._atype.union) {
-      const union_ctx = ctx._atype.union();
-      const atypes_in_union = [] as Name[];
-      for (let i = 0; i < (union_ctx?.childCount ?? 0); i++) {
-        atypes_in_union.push(union_ctx?.getChild(i).accept(this) as Name);
-      }
-
-      atypes_in_union.map((atype) => atypes.push(atype.name));
+    } else if (ctx._atype?.union()) {
+      const union_types = ctx._atype?.union()?.NAME();
+      union_types?.map((atype) => atypes.push(atype.text));
     }
 
     return {
@@ -173,18 +170,13 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const body_ctx = ctx.body();
     const body = wrap_in_block(this.visitExprSequence(body_ctx.exprSequence()));
 
-    // Get return types.
+    // Get return type(s).
     const return_types = [] as string[];
     if (ctx._returnType?.NAME()) {
       return_types.push(ctx._returnType?.NAME()?.text!);
-    } else if (ctx._returnType.union) {
-      const union_ctx = ctx._returnType.union();
-      const return_types_in_union = [] as Name[];
-      for (let i = 0; i < (union_ctx?.childCount ?? 0); i++) {
-        return_types_in_union.push(union_ctx?.getChild(i).accept(this) as Name);
-      }
-
-      return_types_in_union.map((atype) => return_types.push(atype.name));
+    } else if (ctx._returnType?.union()) {
+      const union_types = ctx._returnType?.union()?.NAME();
+      union_types?.map((return_type) => return_types.push(return_type.text));
     }
 
     return {
@@ -201,14 +193,9 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const atypes = [] as string[];
     if (ctx._atype?.NAME()) {
       atypes.push(ctx._atype?.NAME()?.text!);
-    } else if (ctx._atype.union) {
-      const union_ctx = ctx._atype.union();
-      const atypes_in_union = [] as Name[];
-      for (let i = 0; i < (union_ctx?.childCount ?? 0); i++) {
-        atypes_in_union.push(union_ctx?.getChild(i).accept(this) as Name);
-      }
-
-      atypes_in_union.map((atype) => atypes.push(atype.name));
+    } else if (ctx._atype?.union()) {
+      const union_types = ctx._atype?.union()?.NAME();
+      union_types?.map((atype) => atypes.push(atype.text));
     }
 
     return {
@@ -257,18 +244,13 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       fields.push(fields_ctx?.getChild(i).accept(this) as StructField);
     }
 
-    // Get super type names.
+    // Get supertype name(s).
     const super_type_names = [] as string[];
     if (ctx._supertype?.NAME()) {
       super_type_names.push(ctx._supertype?.NAME()?.text!);
-    } else if (ctx._supertype.union) {
-      const union_ctx = ctx._supertype.union();
-      const super_type_names_in_union = [] as Name[];
-      for (let i = 0; i < (union_ctx?.childCount ?? 0); i++) {
-        super_type_names_in_union.push(union_ctx?.getChild(i).accept(this) as Name);
-      }
-
-      super_type_names_in_union.map((atype) => super_type_names.push(atype.name));
+    } else if (ctx._supertype?.union()) {
+      const union_types = ctx._supertype?.union()?.NAME();
+      union_types?.map((super_type_name) => super_type_names.push(super_type_name.text));
     }
 
     return {
@@ -284,14 +266,9 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const atypes = [] as string[];
     if (ctx._atype?.NAME()) {
       atypes.push(ctx._atype?.NAME()?.text!);
-    } else if (ctx._atype.union) {
-      const union_ctx = ctx._atype.union();
-      const atypes_in_union = [] as Name[];
-      for (let i = 0; i < (union_ctx?.childCount ?? 0); i++) {
-        atypes_in_union.push(union_ctx?.getChild(i).accept(this) as Name);
-      }
-
-      atypes_in_union.map((atype) => atypes.push(atype.name));
+    } else if (ctx._atype?.union()) {
+      const union_types = ctx._atype?.union()?.NAME();
+      union_types?.map((atype) => atypes.push(atype.text));
     }
 
     return {
@@ -306,18 +283,13 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     temp_ctx: AbstractTypeDeclarationContext
   ): AbstractTypeDeclaration {
     const ctx = temp_ctx.absTypeDeclr();
-    // Get super type names.
+    // Get supertype name(s).
     const super_type_names = [] as string[];
     if (ctx._supertype?.NAME()) {
       super_type_names.push(ctx._supertype?.NAME()?.text!);
-    } else if (ctx._supertype.union) {
-      const union_ctx = ctx._supertype.union();
-      const super_type_names_in_union = [] as Name[];
-      for (let i = 0; i < (union_ctx?.childCount ?? 0); i++) {
-        super_type_names_in_union.push(union_ctx?.getChild(i).accept(this) as Name);
-      }
-
-      super_type_names_in_union.map((atype) => super_type_names.push(atype.name));
+    } else if (ctx._supertype?.union()) {
+      const union_types = ctx._supertype?.union()?.NAME();
+      union_types?.map((super_type_name) => super_type_names.push(super_type_name.text));
     }
     return {
       type: "AbstractTypeDeclaration",
