@@ -1,6 +1,6 @@
-x::Union{} = "hello"
+x::Union{Bool} = true
 y::Union{String, Int64, Bool} = 100 
-z::Int64 = "a"
+z::String = "a"
 
 println(x)
 println(y)
