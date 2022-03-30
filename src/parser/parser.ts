@@ -71,6 +71,7 @@ import {
   Block,
   RelationalExpression,
   ConditionalExpression,
+  Type,
 } from "./../types/types";
 
 class NodeGenerator implements BabyJuliaVisitor<Node> {
@@ -221,13 +222,18 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
       fields.push(fields_ctx?.getChild(i).accept(this) as StructField);
     }
 
-    // Get supertype name(s).
-    const super_type_names = getTypes(ctx._supertype);
-
     return {
       type: "StructDefinition",
       name: ctx._structName.text!,
-      super_type_names: super_type_names.length == 0 ? null : super_type_names,
+      tv: {
+        name: ctx._tv?.text ?? null,
+        supername: ctx._tvparent?.text ?? null,
+      },
+      super_type: ctx._super_type?.text ?? null,
+      super_type_tv: {
+        name: ctx._super_type_tv?.text ?? null,
+        supername: ctx._super_type_tv_parent?.text ?? null,
+      },
       fields,
     };
   }
@@ -373,7 +379,9 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     });
   }
 
-  visitRelationalExpression(ctx: RelationalExpressionContext): RelationalExpression {
+  visitRelationalExpression(
+    ctx: RelationalExpressionContext
+  ): RelationalExpression {
     return {
       type: "RelationalExpression",
       operator: ctx._operator.text!,
@@ -382,7 +390,9 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     };
   }
 
-  visitConditionalExpression(ctx: ConditionalExpressionContext): ConditionalExpression {
+  visitConditionalExpression(
+    ctx: ConditionalExpressionContext
+  ): ConditionalExpression {
     return {
       type: "ConditionalExpression",
       predicate: this.visit(ctx._predicate) as Expression,
@@ -418,13 +428,22 @@ function convertSource(prog: ProgramContext): Node {
   return wrap_in_block(expressionSeq.accept(generator) as ExpressionSequence);
 }
 
-function getTypes(typeCtx: TypeContext): string[] {
-  const types = [] as string[];
+function getTypes(typeCtx: TypeContext): Type {
+  const types = [] as Type;
   if (typeCtx?.NAME()) {
     types.push(typeCtx?.NAME()?.text!);
   } else if (typeCtx?.union()) {
     const union_types = typeCtx?.union()?.NAME();
-    union_types?.map((atype) => types.push(atype.text));
+    union_types?.forEach((atype) => types.push(atype.text));
+  } else if (typeCtx?.parametric()) {
+    const param_ctx = typeCtx.parametric();
+    types.push({
+      base: param_ctx?._base.text!,
+      tv: {
+        name: param_ctx?._tv.text ?? null,
+        supername: param_ctx?._tv_super.text ?? null,
+      },
+    });
   }
 
   return types;

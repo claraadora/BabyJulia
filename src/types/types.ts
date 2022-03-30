@@ -79,7 +79,7 @@ export interface VariableDefinition {
   type: "VariableDefinition";
   name: string;
   expr: Expression;
-  atypes: string[] | null;
+  atypes: Type | null;
 }
 
 // Function Definition
@@ -88,13 +88,13 @@ export interface FunctionDefinition {
   name: string;
   params: Parameter[];
   body: Block;
-  return_types: string[] | null;
+  return_types: Type | null;
 }
 
 export interface Parameter {
   type: "Parameter";
   name: string;
-  atypes: string[] | null;
+  atypes: Type | null;
 }
 
 export interface ReturnStatement {
@@ -114,21 +114,23 @@ export interface FunctionApplication {
 export interface StructDefinition {
   type: "StructDefinition";
   name: string;
-  super_type_names: string[] | null;
+  tv: TypeVarInfo;
+  super_type: string | null;
+  super_type_tv: TypeVarInfo;
   fields: StructField[];
 }
 
 export interface StructField {
   type: "StructField";
   name: string;
-  atypes: string[] | null;
+  atypes: Type | null;
 }
 
 // Abstract Type
 export interface AbstractTypeDeclaration {
   type: "AbstractTypeDeclaration";
   name: string;
-  super_type_names: string[] | null;
+  super_type_names: Type | null;
 }
 
 // Print stmt
@@ -145,14 +147,14 @@ export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
   value: Value | Array<Value> | null | Function;
-  types: string[];
+  types: Type;
 }
 
 export interface FuncValAndType {
   value: Block | null | Function;
-  param_types: string[];
+  param_types: Type;
   param_names: string[];
-  return_types: string[] | null;
+  return_types: Type | null;
   env_stack: EnvStack;
 }
 
@@ -197,6 +199,18 @@ export interface RelationalExpression {
   right: Expression;
 }
 
+export type TypeVarInfo = {
+  name: string | null;
+  supername: string | null;
+};
+
+export type PlainType = string;
+export interface ParametricType {
+  base: string;
+  tv: TypeVarInfo;
+}
+
+export type Type = (PlainType | ParametricType)[];
 // Type guards
 export const is_primitive = (value: any): boolean => Object(value) !== value;
 
@@ -225,8 +239,7 @@ export const is_declaration = (
 export const is_number = (value: any): value is number =>
   typeof value === typeof 1;
 
-export const is_float = (value: any): value is number =>
-  value % 1 !== 0;
+export const is_float = (value: any): value is number => value % 1 !== 0;
 
 export const is_func_val_and_type = (value: any): value is FuncValAndType =>
   typeof value === typeof {} &&
