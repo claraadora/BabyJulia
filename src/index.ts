@@ -1,7 +1,7 @@
 import { parse } from "./parser/parser";
 import * as fs from "fs";
 import { argv } from "process";
-// import { evaluate } from "./evaluator/evaluator";
+import { evaluate } from "./evaluator/evaluator";
 import { sanitize } from "./sanitize";
 import * as _ from "lodash";
 import { Block, Node, Value } from "./types/types";
@@ -24,12 +24,11 @@ function main() {
 
   const parsed_program = parse(program);
   sanitize(parsed_program);
-  pretty_print(parsed_program);
-  // try {
-  //   const evaluated_program = evaluate(parsed_program);
-  //   pretty_print(evaluated_program);
-  // } catch (err) {
-  //   console.log(err.message);
-  // }
+  try {
+    const evaluated_program = evaluate(parsed_program);
+    pretty_print(evaluated_program);
+  } catch (err) {
+    console.log(err.message);
+  }
 }
 main();

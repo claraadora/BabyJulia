@@ -87,7 +87,7 @@ export interface FunctionDefinition {
   ntype: "FunctionDefinition";
   name: string;
   params: Parameter[];
-  body: Block;
+  body: ExpressionSequence;
   return_type: Type | null;
 }
 
@@ -149,10 +149,10 @@ export interface VarValAndType {
 }
 
 export interface FuncValAndType {
-  value: Block | null | Function;
-  param_types: Type;
+  value: ExpressionSequence | null | Function;
+  param_types: Type[];
   param_names: string[];
-  return_types: Type | null;
+  return_type: Type | null;
   env_stack: EnvStack;
 }
 
@@ -199,7 +199,7 @@ export interface RelationalExpression {
 
 export type TypeVarInfo = {
   name: string | null;
-  supername: string | null;
+  super_name: string | null;
 };
 
 export type PlainType = string;

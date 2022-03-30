@@ -158,7 +158,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
 
     // Get body.
     const body_ctx = ctx.body();
-    const body = wrap_in_block(this.visitExprSequence(body_ctx.exprSequence()));
+    const body = this.visitExprSequence(body_ctx.exprSequence());
 
     // Get return type.
     const return_type = this.visitType(ctx._returnType) as Type;
@@ -395,21 +395,6 @@ class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
     };
   }
 
-  /*
-function getTypes(typeCtx: TypeContext): string[] {
-  const types = [] as string[];
-  if (typeCtx?.NAME()) {
-    types.push(typeCtx?.NAME()?.text!);
-  } else if (typeCtx?.union()) {
-    const union_types = typeCtx?.union()?.NAME();
-    union_types?.map((atype) => types.push(atype.text));
-  }
-
-  return types;
-}
-
-  */
-
   visitType(ctx: TypeContext): Type | null {
     if (ctx?.NAME()) {
       // Plain type.
@@ -429,7 +414,7 @@ function getTypes(typeCtx: TypeContext): string[] {
         base: param_ctx?._base.text!,
         tv: {
           name: param_ctx?._tv?.text ?? null,
-          supername: param_ctx?._tv_super?.text ?? null,
+          super_name: param_ctx?._tv_super?.text ?? null,
         },
       };
     } else {

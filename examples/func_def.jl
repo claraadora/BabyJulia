@@ -11,12 +11,12 @@ end
 
 function myplus(x::Int64, y::String)::String
     x = 3 
-    y = "Hello!"
+    y = "Hello " * y
     return y 
 end 
 
-myplus(1, "yeay") # Can't have two equally specific functions.
-myplus(1) # Can't have two equally specific functions.
-myplus(1, 6) # 3
-myplus(1, 2 , 3) # 3
-# myplus("s1", "s2") # 5 --> correct
+println(myplus(1, "Johanna")) # "Hello Johanna"
+println(myplus(1)) # 3
+println(myplus(1, 6)) # 5 
+println(myplus("s1", "s2")) # 5 --> correct
+myplus(1, 2 , 3) # shd not find any matching function
