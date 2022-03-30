@@ -46,16 +46,7 @@ funcApp: fname = NAME '(' arguments? ')';
 
 // 4. Struct Definition
 structDef:
-	'struct' structName = NAME (
-		'{' tv = NAME (SUBTYPE_OF tvparent = NAME)? '}'
-	)? (
-		SUBTYPE_OF super_type = NAME (
-			'{' (
-				(super_type_tv = NAME)
-				| ( SUBTYPE_OF super_type_tv_parent = NAME)
-			) '}'
-		)?
-	)? NEWLINE structFields? 'end';
+	'struct' base_type = type (SUBTYPE_OF super_type = type)? NEWLINE structFields? 'end';
 
 structFields: (structField)*;
 
@@ -63,7 +54,9 @@ structField: varName = NAME (INSTANCE_OF atype = type)? NEWLINE;
 
 // 5. Abstract Type Declaration
 absTypeDeclr:
-	'abstract' 'type' NAME (SUBTYPE_OF supertype = type)? 'end';
+	'abstract' 'type' base_type = type (
+		SUBTYPE_OF super_type = type
+	)? 'end';
 
 // 6. Field Access
 fldAccess: objName = NAME '.' fieldName = NAME;
@@ -95,9 +88,9 @@ forLoopStmt:
 
 // Union types
 type: union | parametric | NAME;
-union: 'Union' '{' (NAME (',' NAME)*)? '}';
+union: 'Union' '{' (type (',' type)*)? '}';
 parametric:
-	base = NAME '{' (tv = NAME)? (INSTANCE_OF tv_super = NAME)? '}';
+	base = NAME '{' (tv = NAME)? (SUBTYPE_OF tv_super = NAME)? '}';
 
 // Lexer rules bin ops
 POW: '^';

@@ -5,6 +5,7 @@ import {
   is_declaration,
   is_function_definition,
   Primitive,
+  Type,
   ValAndType,
   Value,
   VarValAndType,
@@ -111,12 +112,12 @@ class EnvFrame {
     return this.name_to_vals[name];
   }
 
-  assign_name(name: string, value: Primitive | Object, types: string[]) {
+  assign_name(name: string, value: Primitive | Object, type: Type) {
     let vnt_arr = this.get(name);
 
     // TODO: add checks here
-    if (vnt_arr.length === 0) vnt_arr.push({ value, types });
-    else vnt_arr[0] = { value, types };
+    if (vnt_arr.length === 0) vnt_arr.push({ value, type });
+    else vnt_arr[0] = { value, type };
   }
 
   assign_fname(
