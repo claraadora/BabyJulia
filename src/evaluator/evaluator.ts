@@ -37,14 +37,19 @@ import * as _ from "lodash";
 import { TypeGraph, TypeUtil } from "../type_graph/type_graph";
 import { EnvStack } from "../environment/environment";
 
+// Constants.
 const ANY = "Any";
 const RETURN_VALUE_TAG = "return_value";
 
-const type_graph = new TypeGraph();
+// Type graph.
+let type_graph = new TypeGraph();
+
+// Environment.
 let env = new EnvStack();
 env.setup();
 
-const obj_to_runtime_types = new Map<
+// Object to runtime types.
+let obj_to_runtime_types = new Map<
   string,
   { base_name: string; tv_name: string }
 >();
@@ -553,4 +558,19 @@ const evaluate_conditional_expression = (
   }
 
   return predicate ? consequent : alternative;
+};
+
+export const clear_only_if_you_are_sure_and_are_debugging = () => {
+  // Type graph.
+  type_graph = new TypeGraph();
+
+  // Environment.
+  env = new EnvStack();
+  env.setup();
+
+  // Object to runtime types.
+  obj_to_runtime_types = new Map<
+    string,
+    { base_name: string; tv_name: string }
+  >();
 };
