@@ -27,7 +27,6 @@ function matrix_mult(A,B)
             for k = 1:numRowB
                 sum = sum + (A[i,k] * B[k,j])
             end
-            # println(sum)
         end
     end
 end

@@ -109,21 +109,9 @@ export class TypeGraph {
   }
 
   // Get distance from child node to parent node by traversing up the graph. If unreachable, -1 is returned.
-  // Basically a `subtype(t1, t2)` function which outputs positive value when t1 <: t2 and negative value otherwise, and also shows how specific the two types are.
-  // Note that child_node_name cannot be a union type
+  // Basically a `subtype(t1, t2)` function which outputs how specific the two types are (lower value means more specific) when t1 <: t2 and Number.MAX_VALUE otherwise.
+  // Note that child_type cannot be a union type.
   get_distance_from(child_type: Type, parent_type: Type) {
-    // string - string, string - union, string - param, param - string, param - union, param - param
-
-    // 2. If param_type is union
-    // 2a. Condense union
-    // 2b. Iterate the types in union, get dist_i. distance = min(dist_i)
-
-    // 3. If param_type is parametric
-    // 3a. Compare the name of the base
-    // 3b. Compare the name of tv
-
-    // ==== //
-
     // string - string
     if (TypeUtil.is_plain(child_type) && TypeUtil.is_plain(parent_type)) {
       const child_node = this.get_node(child_type);
@@ -158,11 +146,6 @@ export class TypeGraph {
       }
       return shortest_dist;
     }
-
-    // string - param (e.g. A vs A{T})
-
-    // If array (union type)
-    // If object (param type)
 
     return Number.MAX_VALUE;
   }

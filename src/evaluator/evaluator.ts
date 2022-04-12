@@ -343,6 +343,7 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
   return eval_result;
 }
 
+// TODO
 function check_func_return_type_against_atype() {
   // If atype is string
   // If atype is union
