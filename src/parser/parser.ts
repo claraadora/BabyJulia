@@ -44,7 +44,6 @@ import {
   BabyJuliaParser,
   ExprContext,
   ExprSequenceContext,
-  ParametersContext,
 } from "../lang/BabyJuliaParser";
 import { BabyJuliaLexer } from "../lang/BabyJuliaLexer";
 import {
@@ -74,7 +73,7 @@ import {
   Type,
 } from "./../types/types";
 
-class NodeGenerator implements BabyJuliaVisitor<Node> {
+class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
   // Expressions
   visitExprSequence(ctx: ExprSequenceContext): ExpressionSequence {
     const expressions: Expression[] = [];
@@ -83,7 +82,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     }
 
     return {
-      type: "ExpressionSequence",
+      ntype: "ExpressionSequence",
       expressions,
     };
   }
@@ -95,7 +94,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitNumber(temp_ctx: NumberContext): NumberLiteral {
     const ctx = temp_ctx.NUMBER();
     return {
-      type: "NumberLiteral",
+      ntype: "NumberLiteral",
       value: ctx.text,
     };
   }
@@ -103,7 +102,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitString(temp_ctx: StringContext): StringLiteral {
     const ctx = temp_ctx.STRING();
     return {
-      type: "StringLiteral",
+      ntype: "StringLiteral",
       value: ctx.text.replace(/['"]+/g, ""), // TODO: hacky
     };
   }
@@ -111,7 +110,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitBoolean(temp_ctx: BooleanContext): BooleanLiteral {
     const ctx = temp_ctx.BOOL();
     return {
-      type: "BooleanLiteral",
+      ntype: "BooleanLiteral",
       value: ctx.text,
     };
   }
@@ -119,7 +118,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitName(temp_ctx: NameContext): Name {
     const ctx = temp_ctx.identifier();
     return {
-      type: "Name",
+      ntype: "Name",
       name: ctx.text,
     };
   }
@@ -127,7 +126,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitFieldAccess(temp_ctx: FieldAccessContext): FieldAccess {
     const ctx = temp_ctx.fldAccess();
     return {
-      type: "FieldAccess",
+      ntype: "FieldAccess",
       objName: ctx._objName.text!,
       fieldName: ctx._fieldName.text!,
     };
@@ -136,13 +135,13 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   // Variable Definition
   visitVarDefinition(temp_ctx: VarDefinitionContext): VariableDefinition {
     const ctx = temp_ctx.varDef();
-    const atypes = getTypes(ctx._atype);
+    const atype = this.visitType(ctx._atype) as Type;
 
     return {
-      type: "VariableDefinition",
+      ntype: "VariableDefinition",
       name: ctx._name.text!,
       expr: ctx.expr().accept(this) as Expression,
-      atypes: atypes.length == 0 ? null : atypes,
+      atype,
     };
   }
 
@@ -159,33 +158,33 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
     // Get body.
     const body_ctx = ctx.body();
-    const body = wrap_in_block(this.visitExprSequence(body_ctx.exprSequence()));
+    const body = this.visitExprSequence(body_ctx.exprSequence());
 
-    // Get return type(s).
-    const return_types = getTypes(ctx._returnType);
+    // Get return type.
+    const return_type = this.visitType(ctx._returnType) as Type;
 
     return {
-      type: "FunctionDefinition",
+      ntype: "FunctionDefinition",
       name: ctx._funcName.text!,
       params,
       body,
-      return_types: return_types.length == 0 ? null : return_types,
+      return_type,
     };
   }
 
   visitParameter(ctx: ParameterContext): Parameter {
-    const atypes = getTypes(ctx._atype);
+    const atype = this.visitType(ctx._atype) as Type;
 
     return {
-      type: "Parameter",
+      ntype: "Parameter",
       name: ctx._name.text!,
-      atypes: atypes.length == 0 ? null : atypes,
+      atype,
     };
   }
 
   visitReturnStatement(ctx: ReturnStatementContext): ReturnStatement {
     return {
-      type: "ReturnStatement",
+      ntype: "ReturnStatement",
       expr: (ctx.returnStmt().expr()?.accept(this) as Expression) ?? null,
     };
   }
@@ -201,7 +200,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     }
 
     return {
-      type: "FunctionApplication",
+      ntype: "FunctionApplication",
       name: ctx._fname.text!,
       args,
     };
@@ -223,28 +222,22 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     }
 
     return {
-      type: "StructDefinition",
-      name: ctx._structName.text!,
-      tv: {
-        name: ctx._tv?.text ?? null,
-        supername: ctx._tvparent?.text ?? null,
-      },
-      super_type: ctx._super_type?.text ?? null,
-      super_type_tv: {
-        name: ctx._super_type_tv?.text ?? null,
-        supername: ctx._super_type_tv_parent?.text ?? null,
-      },
+      ntype: "StructDefinition",
+      type: this.visitType(ctx._base_type) as Type,
+      super_type: ctx._super_type
+        ? (this.visitType(ctx._super_type) as Type)
+        : null,
       fields,
     };
   }
 
   visitStructField(ctx: StructFieldContext): StructField {
-    const atypes = getTypes(ctx._atype);
+    const atype = this.visitType(ctx._atype) as Type;
 
     return {
-      type: "StructField",
+      ntype: "StructField",
       name: ctx._varName.text!,
-      atypes: atypes.length == 0 ? null : atypes,
+      atype,
     };
   }
 
@@ -253,19 +246,20 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     temp_ctx: AbstractTypeDeclarationContext
   ): AbstractTypeDeclaration {
     const ctx = temp_ctx.absTypeDeclr();
-    const super_type_names = getTypes(ctx._supertype);
 
     return {
-      type: "AbstractTypeDeclaration",
-      name: ctx.NAME().text!,
-      super_type_names: super_type_names.length == 0 ? null : super_type_names,
+      ntype: "AbstractTypeDeclaration",
+      type: this.visitType(ctx._base_type) as Type,
+      super_type: ctx._super_type
+        ? (this.visitType(ctx._super_type) as Type)
+        : null,
     };
   }
 
   // Print Expression
   visitPrintExpression(ctx: PrintExpressionContext): PrintExpression {
     return {
-      type: "PrintExpression",
+      ntype: "PrintExpression",
       expr: (ctx.printExpr().expr()?.accept(this) as Expression) ?? null,
     };
   }
@@ -277,7 +271,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
   visitPower(ctx: PowerContext): Expression {
     return {
-      type: "BinaryExpression",
+      ntype: "BinaryExpression",
       operator: "^",
       left: this.visit(ctx._left) as Expression,
       right: this.visit(ctx._right) as Expression,
@@ -286,7 +280,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
   visitMultDiv(ctx: MultDivContext): Expression {
     return {
-      type: "BinaryExpression",
+      ntype: "BinaryExpression",
       operator: ctx._operator.text!,
       left: this.visit(ctx._left) as Expression,
       right: this.visit(ctx._right) as Expression,
@@ -295,7 +289,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
   visitAddSub(ctx: AddSubContext): Expression {
     return {
-      type: "BinaryExpression",
+      ntype: "BinaryExpression",
       operator: ctx._operator.text!,
       left: this.visit(ctx._left) as Expression,
       right: this.visit(ctx._right) as Expression,
@@ -317,7 +311,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     }
 
     return {
-      type: "Arr",
+      ntype: "Arr",
       value: exprs,
     };
   }
@@ -343,7 +337,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     }
 
     return {
-      type: "Arr",
+      ntype: "Arr",
       value: exprs,
     };
   }
@@ -355,7 +349,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
   visitIndexAccess(temp_ctx: IndexAccessContext): IndexAccess {
     const ctx = temp_ctx.idxAccess();
     return {
-      type: "IndexAccess",
+      ntype: "IndexAccess",
       name: ctx._name.text!,
       start_idx: ctx._startIdx.accept(this) as Expression,
       end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
@@ -371,7 +365,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     const body = this.visitExprSequence(body_ctx.exprSequence());
 
     return wrap_in_block({
-      type: "ForLoop",
+      ntype: "ForLoop",
       name: ctx._name.text!,
       start_idx: (ctx._startIdx?.accept(this) as Expression) ?? null,
       end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
@@ -383,7 +377,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     ctx: RelationalExpressionContext
   ): RelationalExpression {
     return {
-      type: "RelationalExpression",
+      ntype: "RelationalExpression",
       operator: ctx._operator.text!,
       left: this.visit(ctx._left) as Expression,
       right: this.visit(ctx._right) as Expression,
@@ -394,15 +388,42 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
     ctx: ConditionalExpressionContext
   ): ConditionalExpression {
     return {
-      type: "ConditionalExpression",
+      ntype: "ConditionalExpression",
       predicate: this.visit(ctx._predicate) as Expression,
       consequent: this.visit(ctx._consequent) as Expression,
       alternative: this.visit(ctx._alternative) as Expression,
     };
   }
 
+  visitType(ctx: TypeContext): Type | null {
+    if (ctx?.NAME()) {
+      // Plain type.
+      return ctx?.NAME()?.text!;
+    } else if (ctx?.union()) {
+      // Union type.
+      const types = [] as Type[];
+      ctx
+        .union()
+        ?.type()
+        .map((t) => types.push(this.visitType(t) as Type));
+      return types;
+    } else if (ctx?.parametric()) {
+      // Parametric type.
+      const param_ctx = ctx.parametric();
+      return {
+        base: param_ctx?._base.text!,
+        tv: {
+          name: param_ctx?._tv?.text ?? null,
+          super_name: param_ctx?._tv_super?.text ?? null,
+        },
+      };
+    } else {
+      return null;
+    }
+  }
+
   // ANTLR things
-  visit(tree: ParseTree): Node {
+  visit(tree: ParseTree): Node | Type | null {
     return tree.accept(this);
   }
 
@@ -417,7 +438,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node> {
 
 function wrap_in_block(node: ForLoop | ExpressionSequence): Block {
   return {
-    type: "Block",
+    ntype: "Block",
     node,
   };
 }
@@ -426,27 +447,6 @@ function convertSource(prog: ProgramContext): Node {
   const expressionSeq = prog.exprSequence();
   const generator = new NodeGenerator();
   return wrap_in_block(expressionSeq.accept(generator) as ExpressionSequence);
-}
-
-function getTypes(typeCtx: TypeContext): Type {
-  const types = [] as Type;
-  if (typeCtx?.NAME()) {
-    types.push(typeCtx?.NAME()?.text!);
-  } else if (typeCtx?.union()) {
-    const union_types = typeCtx?.union()?.NAME();
-    union_types?.forEach((atype) => types.push(atype.text));
-  } else if (typeCtx?.parametric()) {
-    const param_ctx = typeCtx.parametric();
-    types.push({
-      base: param_ctx?._base.text!,
-      tv: {
-        name: param_ctx?._tv.text ?? null,
-        supername: param_ctx?._tv_super.text ?? null,
-      },
-    });
-  }
-
-  return types;
 }
 
 export function parse(source: string) {

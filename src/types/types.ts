@@ -16,16 +16,16 @@ export type Primitive = number | boolean | string;
 export type Value = Primitive | Object | Array<Value>;
 
 export interface Program {
-  type: "Program";
+  ntype: "Program";
   expressions: ExpressionSequence;
 }
 export interface ExpressionSequence {
-  type: "ExpressionSequence";
+  ntype: "ExpressionSequence";
   expressions: Array<Expression>;
 }
 
 export interface Block {
-  type: "Block";
+  ntype: "Block";
   node: ExpressionSequence | ForLoop;
 }
 
@@ -49,93 +49,91 @@ export type Expression =
   | ConditionalExpression;
 
 export interface NumberLiteral {
-  type: "NumberLiteral";
+  ntype: "NumberLiteral";
   value: string;
 }
 
 export interface StringLiteral {
-  type: "StringLiteral";
+  ntype: "StringLiteral";
   value: string;
 }
 
 export interface BooleanLiteral {
-  type: "BooleanLiteral";
+  ntype: "BooleanLiteral";
   value: string;
 }
 
 export interface Name {
-  type: "Name";
+  ntype: "Name";
   name: string;
 }
 
 export interface FieldAccess {
-  type: "FieldAccess";
+  ntype: "FieldAccess";
   objName: string;
   fieldName: string;
 }
 
 // Variable Definition
 export interface VariableDefinition {
-  type: "VariableDefinition";
+  ntype: "VariableDefinition";
   name: string;
   expr: Expression;
-  atypes: Type | null;
+  atype: Type | null;
 }
 
 // Function Definition
 export interface FunctionDefinition {
-  type: "FunctionDefinition";
+  ntype: "FunctionDefinition";
   name: string;
   params: Parameter[];
-  body: Block;
-  return_types: Type | null;
+  body: ExpressionSequence;
+  return_type: Type | null;
 }
 
 export interface Parameter {
-  type: "Parameter";
+  ntype: "Parameter";
   name: string;
-  atypes: Type | null;
+  atype: Type | null;
 }
 
 export interface ReturnStatement {
-  type: "ReturnStatement";
+  ntype: "ReturnStatement";
   expr: Expression | null;
 }
 
 export type EvaluatedReturnStatement = [string, any];
 // Function Application
 export interface FunctionApplication {
-  type: "FunctionApplication";
+  ntype: "FunctionApplication";
   name: string;
   args: Expression[];
 }
 
 // Struct
 export interface StructDefinition {
-  type: "StructDefinition";
-  name: string;
-  tv: TypeVarInfo;
-  super_type: string | null;
-  super_type_tv: TypeVarInfo;
+  ntype: "StructDefinition";
+  type: Type;
+  super_type: Type | null;
   fields: StructField[];
 }
 
 export interface StructField {
-  type: "StructField";
+  ntype: "StructField";
   name: string;
-  atypes: Type | null;
+  atype: Type | null;
 }
 
 // Abstract Type
 export interface AbstractTypeDeclaration {
-  type: "AbstractTypeDeclaration";
-  name: string;
-  super_type_names: Type | null;
+  ntype: "AbstractTypeDeclaration";
+  type: Type;
+  super_type: Type | null;
 }
 
 // Print stmt
 export interface PrintExpression {
-  type: "PrintExpression";
+  ntype: "PrintExpression";
   expr: Expression;
 }
 
@@ -147,38 +145,38 @@ export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
   value: Value | Array<Value> | null | Function;
-  types: Type;
+  type: Type;
 }
 
 export interface FuncValAndType {
-  value: Block | null | Function;
-  param_types: Type;
+  value: ExpressionSequence | null | Function;
+  param_types: Type[];
   param_names: string[];
-  return_types: Type | null;
+  return_type: Type | null;
   env_stack: EnvStack;
 }
 
 export interface BinaryExpression {
-  type: "BinaryExpression";
+  ntype: "BinaryExpression";
   operator: string;
   left: Expression;
   right: Expression;
 }
 
 export interface Arr {
-  type: "Arr";
+  ntype: "Arr";
   value: Array<Expression> | Array<Array<Expression>>;
 }
 
 export interface IndexAccess {
-  type: "IndexAccess";
+  ntype: "IndexAccess";
   name: string;
   start_idx: Expression;
   end_idx: Expression | null;
 }
 
 export interface ForLoop {
-  type: "ForLoop";
+  ntype: "ForLoop";
   name: string;
   start_idx: Expression;
   end_idx: Expression;
@@ -186,14 +184,14 @@ export interface ForLoop {
 }
 
 export interface ConditionalExpression {
-  type: "ConditionalExpression";
+  ntype: "ConditionalExpression";
   predicate: Expression;
   consequent: Expression;
   alternative: Expression;
 }
 
 export interface RelationalExpression {
-  type: "RelationalExpression";
+  ntype: "RelationalExpression";
   operator: string;
   left: Expression;
   right: Expression;
@@ -201,7 +199,7 @@ export interface RelationalExpression {
 
 export type TypeVarInfo = {
   name: string | null;
-  supername: string | null;
+  super_name: string | null;
 };
 
 export type PlainType = string;
@@ -210,23 +208,23 @@ export interface ParametricType {
   tv: TypeVarInfo;
 }
 
-export type Type = (PlainType | ParametricType)[];
+export type Type = PlainType | ParametricType | Type[];
 // Type guards
 export const is_primitive = (value: any): boolean => Object(value) !== value;
 
 export const is_variable_definition = (
   node: Node
-): node is VariableDefinition => node?.type === "VariableDefinition";
+): node is VariableDefinition => node?.ntype === "VariableDefinition";
 
 export const is_function_definition = (
   node: Node
-): node is FunctionDefinition => node?.type === "FunctionDefinition";
+): node is FunctionDefinition => node?.ntype === "FunctionDefinition";
 
 export const is_struct_definition = (node: Node): node is StructDefinition =>
-  node?.type === "StructDefinition";
+  node?.ntype === "StructDefinition";
 
 export const is_for_loop = (node: Node): node is ForLoop =>
-  node?.type === "ForLoop";
+  node?.ntype === "ForLoop";
 
 export const is_declaration = (
   node: Node

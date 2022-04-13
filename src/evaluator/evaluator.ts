@@ -3,7 +3,6 @@ import {
   VariableDefinition,
   Node,
   ExpressionSequence,
-  VarValAndType,
   FuncValAndType,
   Primitive,
   FunctionDefinition,
@@ -13,8 +12,6 @@ import {
   ReturnStatement,
   EvaluatedReturnStatement,
   AbstractTypeDeclaration,
-  ValAndType,
-  is_primitive,
   is_declaration,
   Expression,
   StructDefinition,
@@ -25,31 +22,40 @@ import {
   Arr,
   IndexAccess,
   Value,
-  is_func_val_and_type,
   is_var_val_and_type,
   ForLoop,
-  is_for_loop,
   Block,
   is_string,
   RelationalExpression,
   ConditionalExpression,
   is_float,
+  is_struct_definition,
+  Type,
+  PlainType,
 } from "./../types/types";
 import * as _ from "lodash";
-import { TypeGraph } from "../type_graph/type_graph";
+import { TypeGraph, TypeUtil } from "../type_graph/type_graph";
 import { EnvStack } from "../environment/environment";
 
+// Constants.
 const ANY = "Any";
 const RETURN_VALUE_TAG = "return_value";
 
-const type_graph = new TypeGraph();
+// Type graph.
+let type_graph = new TypeGraph();
+
+// Environment.
 let env = new EnvStack();
 env.setup();
 
-const obj_to_runtime_types = new Map();
+// Object to runtime types.
+let obj_to_runtime_types = new Map<
+  string,
+  { base_name: string; tv_name: string }
+>();
 
 export const evaluate = (node: Node): Value | void => {
-  switch (node?.type) {
+  switch (node?.ntype) {
     case "Block":
       return evaluate_block(node);
     case "ExpressionSequence":
@@ -95,14 +101,15 @@ export const evaluate = (node: Node): Value | void => {
 };
 
 const scan_out_names = (node: ForLoop | ExpressionSequence) => {
-  if (node.type === "ForLoop") {
+  if (node.ntype === "ForLoop") {
     return [node.name];
   } else {
     return node.expressions
       .filter((expr) => is_declaration(expr))
-      .map(
-        (expr: FunctionDefinition | VariableDefinition | StructDefinition) =>
-          expr.name
+      .map((expr: FunctionDefinition | VariableDefinition | StructDefinition) =>
+        is_struct_definition(expr)
+          ? TypeUtil.get_base_name(expr.type)
+          : expr.name
       );
   }
 };
@@ -118,6 +125,10 @@ const get_runtime_type = (value: any) => {
     return "Vector";
   }
 
+  if (value === undefined) {
+    return "Nothing";
+  }
+
   switch (type) {
     case typeof 1:
       return is_float(value) ? "Float64" : "Int64";
@@ -126,9 +137,9 @@ const get_runtime_type = (value: any) => {
     case typeof "string":
       return "String";
     case typeof {}:
-      return obj_to_runtime_types.get(value);
+      return obj_to_runtime_types.get(value)?.base_name; // TODO
     default:
-      throw new Error("Can't find type!");
+      throw new Error(`Can't find type ${value}!`);
   }
 };
 
@@ -209,11 +220,15 @@ function get_evaluated_return_value(
 }
 
 // Function Application
-function get_specificity_score(arg_types: string[], param_types: string[]) {
+function get_specificity_score(arg_types: Type[], param_types: Type[]) {
+  // Functions don't match if they have different number of parameters.
+  if (arg_types.length !== param_types.length) {
+    return Number.MAX_VALUE;
+  }
   let specificity_score = 0;
   for (let i = 0; i < param_types.length; i++) {
     const distance = type_graph.get_distance_from(arg_types[i], param_types[i]);
-    if (distance === -1) return -1;
+    if (distance === Number.MAX_VALUE) return Number.MAX_VALUE;
     specificity_score += distance;
   }
   return specificity_score;
@@ -221,12 +236,11 @@ function get_specificity_score(arg_types: string[], param_types: string[]) {
 
 function get_most_specific_function(
   funcs: FuncValAndType[],
-  arg_types: string[]
+  arg_types: Type[]
 ) {
   const func_scores = funcs
     .map((func: FuncValAndType) => func.param_types)
-    .map((param_types) => get_specificity_score(arg_types, param_types))
-    .map((score) => (score < 0 ? Number.MAX_VALUE : score)); // Mark the functions that do not match.
+    .map((param_types) => get_specificity_score(arg_types, param_types));
 
   const min_score = Math.min(...func_scores);
 
@@ -248,12 +262,12 @@ function is_constructor_function(name: string) {
 
 function construct(name: string, arg_vals: (Primitive | Object)[]) {
   const funcValAndType = env.lookup_fnames(name)[0];
-  const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
+  const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg)); // A{T}
 
   const invalid_arg_types = arg_types.filter(
     (arg_type, idx) =>
       type_graph.get_distance_from(
-        arg_type,
+        arg_type as PlainType, // TODO: currently arg type cmn bisa plain type.
         funcValAndType.param_types[idx]
       ) === -1 // can't find path from arg type to param type
   );
@@ -265,7 +279,10 @@ function construct(name: string, arg_vals: (Primitive | Object)[]) {
   const obj = func(...arg_vals);
 
   // Update obj runtime type.
-  obj_to_runtime_types.set(obj, name);
+  obj_to_runtime_types.set(obj, {
+    base_name: name,
+    tv_name: "TODO",
+  });
   return obj;
 }
 
@@ -284,10 +301,15 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
 
   // Get the most specific function.
   const arg_types = arg_vals.map((arg: any) => get_runtime_type(arg));
-  const func = get_most_specific_function(potential_funcs, arg_types);
+  const func = get_most_specific_function(
+    potential_funcs,
+    arg_types as PlainType[]
+  );
 
   // Extend environment.
-  func.env_stack.extend(func.param_names);
+  func.env_stack.extend(
+    _.union(func.param_names, scan_out_names(func.value as ExpressionSequence))
+  );
 
   // Assign arg values to parameter names.
   func.param_names.forEach((param_name, index) =>
@@ -305,12 +327,26 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
 
   // if function has atype, check runtime type of eval_result against the func.atype
   const eval_result_runtime_type = get_runtime_type(eval_result);
-  if (func.return_type !== ANY && (func.return_type !== eval_result_runtime_type)) {
-    throw new Error(`The atype of function ${name} is ${func.return_type}, but it returns value of type ${eval_result_runtime_type}`);
+  if (
+    func.return_type &&
+    type_graph.get_distance_from(
+      eval_result_runtime_type!,
+      func.return_type
+    ) === Number.MAX_VALUE // result type not <: atype
+  ) {
+    throw new Error(
+      `The atype of function ${name} is ${func.return_type}, but it returns value of type ${eval_result_runtime_type}`
+    );
   }
 
   env = env_to_restore;
   return eval_result;
+}
+
+// TODO
+function check_func_return_type_against_atype() {
+  // If atype is string
+  // If atype is union
 }
 
 function make_constructor_function(fields: StructField[]) {
@@ -321,19 +357,29 @@ function make_constructor_function(fields: StructField[]) {
 
 // Struct definition.
 function evaluate_struct_definition(node: StructDefinition) {
+  const struct_name = TypeUtil.get_base_name(node.type);
+  let super_type = node.super_type;
+
+  if (super_type && TypeUtil.is_union(super_type)) {
+    super_type = type_graph.condense_union(super_type);
+  }
+
   // Add to type graph.
-  type_graph.add_node(node.name, node.super_type_name ?? ANY);
+  type_graph.add_node(
+    struct_name,
+    super_type ? TypeUtil.get_base_name(super_type) : ANY
+  );
 
   // Create and add constructor function.
   const constructor_func = make_constructor_function(node.fields);
   const param_types = node.fields.map((field) => field.atype ?? ANY);
   const param_names = node.fields.map((field) => field.name);
   env.assign_fname(
-    node.name,
+    struct_name,
     constructor_func,
     param_types,
     param_names,
-    node.name,
+    struct_name,
     env.clone()
   );
 }
@@ -346,7 +392,17 @@ function evaluate_field_access(node: FieldAccess) {
 
 // Abstract type declaration.
 const evaluate_abstract_type_declaration = (node: AbstractTypeDeclaration) => {
-  type_graph.add_node(node.name, node.super_type_name ?? ANY);
+  const name_of_type = TypeUtil.get_base_name(node.type);
+  let super_type = node.super_type;
+
+  if (super_type && TypeUtil.is_union(super_type)) {
+    super_type = type_graph.condense_union(super_type);
+  }
+
+  const name_of_super_type = super_type
+    ? TypeUtil.get_base_name(super_type)
+    : ANY;
+  type_graph.add_node(name_of_type, name_of_super_type);
 };
 
 // Binary expression.
@@ -453,7 +509,9 @@ function evaluate_for_loop(node: ForLoop) {
 }
 
 // Relational expression.
-const evaluate_relational_expression = (node: RelationalExpression): boolean => {
+const evaluate_relational_expression = (
+  node: RelationalExpression
+): boolean => {
   const left = evaluate(node.left);
   const right = evaluate(node.right);
 
@@ -476,10 +534,12 @@ const evaluate_relational_expression = (node: RelationalExpression): boolean => 
 };
 
 // Conditional expression.
-const evaluate_conditional_expression = (node: ConditionalExpression): Expression => {
+const evaluate_conditional_expression = (
+  node: ConditionalExpression
+): Expression => {
   const consequent = evaluate(node.consequent) as Expression;
   const alternative = evaluate(node.alternative) as Expression;
-  
+
   // TODO: abstract out
   const consequent_runtime_type = get_runtime_type(consequent);
   const alternative_runtime_type = get_runtime_type(alternative);
@@ -493,10 +553,25 @@ const evaluate_conditional_expression = (node: ConditionalExpression): Expressio
   const predicate = evaluate(node.predicate);
   const predicate_runtime_type = get_runtime_type(predicate);
   if (predicate_runtime_type !== "Bool") {
-    throw new Error(`Non-boolean (${predicate_runtime_type}) used in boolean context`);
+    throw new Error(
+      `Non-boolean (${predicate_runtime_type}) used in boolean context`
+    );
   }
 
-  return predicate
-    ? consequent
-    : alternative;
+  return predicate ? consequent : alternative;
+};
+
+export const clear_only_if_you_are_sure_and_are_debugging = () => {
+  // Type graph.
+  type_graph = new TypeGraph();
+
+  // Environment.
+  env = new EnvStack();
+  env.setup();
+
+  // Object to runtime types.
+  obj_to_runtime_types = new Map<
+    string,
+    { base_name: string; tv_name: string }
+  >();
 };

@@ -24,7 +24,6 @@ function main() {
 
   const parsed_program = parse(program);
   sanitize(parsed_program);
-
   try {
     const evaluated_program = evaluate(parsed_program);
     pretty_print(evaluated_program);

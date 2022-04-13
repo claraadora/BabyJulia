@@ -1,13 +1,10 @@
 import {
   Block,
-  Expression,
   FuncValAndType,
-  is_declaration,
-  is_function_definition,
   Primitive,
+  Type,
   ValAndType,
   Value,
-  VarValAndType,
 } from "./../types/types";
 import {
   ExpressionSequence,
@@ -26,7 +23,7 @@ export class EnvStack {
   setup() {
     this.extend(Object.keys(BUILT_IN_NAME_VALS));
     for (let [name, val] of Object.entries(BUILT_IN_NAME_VALS)) {
-      this.assign_name(name, val, ["Any"]);
+      this.assign_name(name, val, "Any");
     }
   }
 
@@ -50,17 +47,17 @@ export class EnvStack {
     return frame.get(name) as FuncValAndType[];
   }
 
-  assign_name(name: string, value: Primitive | Object, types: string[]) {
+  assign_name(name: string, value: Primitive | Object, type: Type) {
     let frame = this.find_nearest_frame(name);
-    frame.assign_name(name, value, types);
+    frame.assign_name(name, value, type);
   }
 
   assign_fname(
     name: string,
-    value: Block | Function,
-    param_types: string[],
+    value: ExpressionSequence | Function,
+    param_types: Type[],
     param_names: string[],
-    return_types: string[],
+    return_type: Type,
     env_stack: EnvStack
   ) {
     let frame = this.find_nearest_frame(name);
@@ -69,7 +66,7 @@ export class EnvStack {
       value,
       param_types,
       param_names,
-      return_types,
+      return_type,
       env_stack
     );
   }
@@ -85,7 +82,6 @@ export class EnvStack {
 
   find_nearest_frame(name: string): EnvFrame {
     const N = this.env_frames.length;
-
     for (let i = N - 1; i >= 0; i--) {
       if (this.env_frames[i].has(name)) return this.env_frames[i];
     }
@@ -111,20 +107,20 @@ class EnvFrame {
     return this.name_to_vals[name];
   }
 
-  assign_name(name: string, value: Primitive | Object, types: string[]) {
+  assign_name(name: string, value: Primitive | Object, type: Type) {
     let vnt_arr = this.get(name);
 
     // TODO: add checks here
-    if (vnt_arr.length === 0) vnt_arr.push({ value, types });
-    else vnt_arr[0] = { value, types };
+    if (vnt_arr.length === 0) vnt_arr.push({ value, type });
+    else vnt_arr[0] = { value, type };
   }
 
   assign_fname(
     name: string,
-    value: Block | Function,
-    param_types: string[],
+    value: ExpressionSequence | Function,
+    param_types: Type[],
     param_names: string[],
-    return_types: string[],
+    return_type: Type,
     env_stack: EnvStack
   ) {
     // TODO: add checks here
@@ -133,7 +129,7 @@ class EnvFrame {
       value,
       param_types,
       param_names,
-      return_types,
+      return_type,
       env_stack,
     });
   }
