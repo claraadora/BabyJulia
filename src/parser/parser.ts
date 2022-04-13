@@ -24,6 +24,7 @@ import {
   MultDivContext,
   AddSubContext,
   ArrContext,
+  EmptyArrContext,
   OneDArrContext,
   TwoDArrContext,
   ColContext,
@@ -300,6 +301,13 @@ class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
   visitArr(temp_ctx: ArrContext): Arr {
     const ctx = temp_ctx.array();
     return ctx.getChild(0).accept(this) as Arr;
+  }
+
+  visitEmptyArr(ctx: EmptyArrContext): Arr {
+    return {
+      ntype: "Arr",
+      value: [] as Expression[],
+    };
   }
 
   visitOneDArr(ctx: OneDArrContext): Arr {
