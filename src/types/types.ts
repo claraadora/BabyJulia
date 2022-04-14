@@ -200,7 +200,7 @@ export interface RelationalExpression {
 
 export interface ArrElementAssignment {
   ntype: "ArrElementAssignment";
-  arrEl: IndexAccess;
+  arr_el: IndexAccess;
   expr: Expression;
 }
 

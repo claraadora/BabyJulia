@@ -456,9 +456,10 @@ const evaluate_binary_expression = (
     return left + "" + right;
   }
 
+  
   // Number and Number
   if (!(is_number(left) && is_number(right))) {
-    throw new Error("Invalid binary expression operand type(s)");
+    throw new Error(`Invalid binary expression operand type(s): ${left} ${node.operator} ${right}`);
   }
 
   switch (node.operator) {
@@ -607,13 +608,13 @@ const evaluate_conditional_expression = (
 
 // Array element assignment.
 function evaluate_arr_element_assignment(node: ArrElementAssignment) {
-  const arrEl = node.arrEl;
+  const arr_el = node.arr_el;
 
-  const arr = env.lookup_name(arrEl.name).value as Array<Value>;
+  const arr = env.lookup_name(arr_el.name).value as Array<Value>;
   const is_2D = Array.isArray(arr[0]);
 
-  const start_idx = evaluate(arrEl.start_idx) as number;
-  const end_idx = is_2D ? (evaluate(arrEl.end_idx!) as number) : null;
+  const start_idx = evaluate(arr_el.start_idx) as number;
+  const end_idx = is_2D ? (evaluate(arr_el.end_idx!) as number) : null;
 
   validate_index_access(arr, start_idx, end_idx);
 

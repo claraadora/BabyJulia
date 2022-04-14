@@ -85,7 +85,7 @@ export class EnvStack {
     for (let i = N - 1; i >= 0; i--) {
       if (this.env_frames[i].has(name)) return this.env_frames[i];
     }
-    throw new Error("Name is not found!");
+    throw new Error(`Name ${name} is not found!`);
   }
 }
 
