@@ -33,7 +33,6 @@ import {
   ConditionalExpressionContext,
   TypeContext,
   ArrElementAssignmentContext,
-  IdxAccessContext,
 } from "./../lang/BabyJuliaParser";
 /* tslint:disable:max-classes-per-file */
 import { ANTLRInputStream, CommonTokenStream } from "antlr4ts";
@@ -349,18 +348,13 @@ class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
     return ctx.expr().accept(this) as Expression;
   }
 
-  visitIdxAccess(ctx: IdxAccessContext): IndexAccess {
+  visitIndexAccess(ctx: IndexAccessContext): IndexAccess {
     return {
       ntype: "IndexAccess",
-      name: ctx._name.text!,
+      name: ctx._name.accept(this) as Expression,
       start_idx: ctx._startIdx.accept(this) as Expression,
       end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
     };
-  }
-
-  visitIndexAccess(temp_ctx: IndexAccessContext): IndexAccess {
-    const ctx = temp_ctx.idxAccess();
-    return this.visitIdxAccess(ctx);
   }
 
   // For loop
@@ -430,14 +424,18 @@ class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
   }
 
   // ArrElementAssignment
-  visitArrElementAssignment(temp_ctx: ArrElementAssignmentContext): ArrElementAssignment {
-    const ctx = temp_ctx.arrElAssg();
-    const arrEl = this.visitIdxAccess(ctx.idxAccess()) as IndexAccess;
+  visitArrElementAssignment(ctx: ArrElementAssignmentContext): ArrElementAssignment {
+    const arr_el = {
+      ntype: "IndexAccess",
+      name: ctx._name.accept(this) as Expression,
+      start_idx: ctx._startIdx.accept(this) as Expression,
+      end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
+    } as IndexAccess;
 
     return {
       ntype: "ArrElementAssignment",
-      arrEl: arrEl,
-      expr: ctx.expr().accept(this) as Expression,
+      arr_el: arr_el,
+      expr: this.visit(ctx._value) as Expression,
     };
   }
 

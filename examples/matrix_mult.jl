@@ -11,12 +11,9 @@ mat_B = [1 2; 3 4]
 
 function matrix_mult(A,B)
     result = [0 0; 0 0]
-    sizeA = size(A)
-    sizeB = size(B)
-
-    numRowA = sizeA[1] 
-    numRowB = sizeB[1] 
-    numColB = sizeB[2]
+    numRowA = size(A)[1] 
+    numRowB = size(B)[1] 
+    numColB = size(B)[2]
 
     # Iterate through rows of A.
     for i = 1:numRowA

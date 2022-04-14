@@ -9,19 +9,19 @@ expr:
 	| funcApp																# FuncApplication
 	| structDef																# StructDefinition
 	| fldAccess																# FieldAccess
-	| idxAccess																# IndexAccess
+  | name = expr '[' startIdx = expr (',' endIdx = expr)? ']' # IndexAccess
 	| absTypeDeclr															# AbstractTypeDeclaration
 	| identifier															# Name
 	| returnStmt															# ReturnStatement
 	| printExpr																# PrintExpression
-	| array																	# Arr
-  | arrElAssg                             # ArrElementAssignment
 	| forLoopStmt															# ForLoop
 	| <assoc = right> left = expr operator = POW right = expr				# Power
 	| left = expr operator = (MUL | DIV) right = expr						# MultDiv
 	| left = expr operator = (ADD | SUB) right = expr						# AddSub
 	| left = expr operator = (EQ | NEQ | GT | GTE | LT | LTE) right = expr	# RelationalExpression
 	| predicate = expr '?' consequent = expr ':' alternative = expr			# ConditionalExpression
+  | array																	# Arr
+  | name = expr '[' startIdx = expr (',' endIdx = expr)? ']' ASSIGN value = expr # ArrElementAssignment
 	| NUMBER																# Number
 	| '(' inner = expr ')'													# Parentheses
 	| STRING																# String
@@ -77,11 +77,6 @@ cols: col ( ',' col)*;
 twoDArr: '[' rows ']';
 rows: (col+) ( ';' col+)*;
 col: expr;
-
-arrElAssg: idxAccess ASSIGN expr;
-
-idxAccess:
-	name = NAME '[' startIdx = expr (',' endIdx = expr)? ']';
 
 forLoopStmt:
 	'for' name = NAME (

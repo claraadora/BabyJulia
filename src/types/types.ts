@@ -171,7 +171,7 @@ export interface Arr {
 
 export interface IndexAccess {
   ntype: "IndexAccess";
-  name: string;
+  name: Expression;
   start_idx: Expression;
   end_idx: Expression | null;
 }
@@ -200,7 +200,7 @@ export interface RelationalExpression {
 
 export interface ArrElementAssignment {
   ntype: "ArrElementAssignment";
-  arrEl: IndexAccess;
+  arr_el: IndexAccess;
   expr: Expression;
 }
 
