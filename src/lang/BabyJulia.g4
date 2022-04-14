@@ -15,6 +15,7 @@ expr:
 	| returnStmt															# ReturnStatement
 	| printExpr																# PrintExpression
 	| array																	# Arr
+  | arrElAssg                             # ArrElementAssignment
 	| forLoopStmt															# ForLoop
 	| <assoc = right> left = expr operator = POW right = expr				# Power
 	| left = expr operator = (MUL | DIV) right = expr						# MultDiv
@@ -76,6 +77,8 @@ cols: col ( ',' col)*;
 twoDArr: '[' rows ']';
 rows: (col+) ( ';' col+)*;
 col: expr;
+
+arrElAssg: idxAccess ASSIGN expr;
 
 idxAccess:
 	name = NAME '[' startIdx = expr (',' endIdx = expr)? ']';

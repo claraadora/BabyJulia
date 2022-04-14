@@ -21,7 +21,13 @@ glob("examples/*.jl", (err, files) => {
 
       // Clear data structures used in evaluator.
       evaluator.clear_only_if_you_are_sure_and_are_debugging();
-      const output = evaluator.evaluate(parsed_program);
+      let output = evaluator.evaluate(parsed_program);
+
+      // Format output if it's a 2d array
+      if (Array.isArray(output[0])) {
+        output = sanitizer.format_2d_array(output);
+      }
+
       const output_str = JSON.stringify(output, null, 0);
       const expected_str = fs.readFileSync(expected_file, "utf8");
 

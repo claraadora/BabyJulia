@@ -2,15 +2,19 @@ import { parse } from "./parser/parser";
 import * as fs from "fs";
 import { argv } from "process";
 import { evaluate } from "./evaluator/evaluator";
-import { sanitize } from "./sanitize";
+import { sanitize, format_2d_array } from "./sanitize";
 import * as _ from "lodash";
-import { Block, Node, Value } from "./types/types";
+import { Value } from "./types/types";
 
 function pretty_print(value: Value | void) {
   const tabs = typeof value === typeof {} && !Array.isArray(value) ? 1 : 0;
   const chalk = require("chalk");
   const header = chalk.hex("#f4b5f9").bold;
   const result = chalk.hex("#f5ecbb");
+
+  if (Array.isArray(value[0])) {
+    value = format_2d_array(value as Value[]);
+  }
 
   console.log(
     header("BabyJulia > "),

@@ -10,7 +10,7 @@ mat_B = [1 2; 3 4]
 # | 4 6 |
 
 function matrix_mult(A,B)
-    sum = 0
+    result = [0 0; 0 0]
     sizeA = size(A)
     sizeB = size(B)
 
@@ -22,13 +22,13 @@ function matrix_mult(A,B)
     for i = 1:numRowA
         # Iterate through cols of B. 
         for j in 1:numColB
-            sum = 0 
             # Iterate through rows of B. 
             for k = 1:numRowB
-                sum = sum + (A[i,k] * B[k,j])
+                result[i,j] = result[i,j] + (A[i,k] * B[k,j])
             end
         end
     end
+    return result
 end
 
 matrix_mult(mat_A, mat_B) # [4 6; 4 6]
