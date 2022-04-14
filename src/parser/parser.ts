@@ -351,7 +351,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
   visitIndexAccess(ctx: IndexAccessContext): IndexAccess {
     return {
       ntype: "IndexAccess",
-      name: ctx._name.text!,
+      name: ctx._name.accept(this) as Expression,
       start_idx: ctx._startIdx.accept(this) as Expression,
       end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
     };
@@ -427,7 +427,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
   visitArrElementAssignment(ctx: ArrElementAssignmentContext): ArrElementAssignment {
     const arr_el = {
       ntype: "IndexAccess",
-      name: ctx._name.text!,
+      name: ctx._name.accept(this) as Expression,
       start_idx: ctx._startIdx.accept(this) as Expression,
       end_idx: (ctx._endIdx?.accept(this) as Expression) ?? null,
     } as IndexAccess;

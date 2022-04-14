@@ -455,7 +455,6 @@ const evaluate_binary_expression = (
   if (is_string(left) && is_string(right) && node.operator === "*") {
     return left + "" + right;
   }
-
   
   // Number and Number
   if (!(is_number(left) && is_number(right))) {
@@ -510,7 +509,7 @@ const evaluate_two_d_array = (node: Arr): Array<Array<Value>> => {
 
 // Index access.
 function evaluate_index_access(node: IndexAccess) {
-  const arr = env.lookup_name(node.name).value as Array<Value>;
+  const arr = evaluate(node.name) as Array<Value>;
   const is_2D = Array.isArray(arr[0]);
 
   const start_idx = evaluate(node.start_idx) as number;
@@ -610,7 +609,7 @@ const evaluate_conditional_expression = (
 function evaluate_arr_element_assignment(node: ArrElementAssignment) {
   const arr_el = node.arr_el;
 
-  const arr = env.lookup_name(arr_el.name).value as Array<Value>;
+  const arr = evaluate(arr_el.name) as Array<Value>;
   const is_2D = Array.isArray(arr[0]);
 
   const start_idx = evaluate(arr_el.start_idx) as number;
