@@ -455,7 +455,7 @@ const evaluate_binary_expression = (
   if (is_string(left) && is_string(right) && node.operator === "*") {
     return left + "" + right;
   }
-  
+
   // Number and Number
   if (!(is_number(left) && is_number(right))) {
     throw new Error(`Invalid binary expression operand type(s): ${left} ${node.operator} ${right}`);
