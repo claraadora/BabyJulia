@@ -108,6 +108,10 @@ export class TypeGraph {
     return condensed_union;
   }
 
+  is_subtype_of(child_type: Type, parent_type: Type) {
+    return this.get_distance_from(child_type, parent_type) !== Number.MAX_VALUE;
+  }
+
   // Get distance from child node to parent node by traversing up the graph. If unreachable, -1 is returned.
   // Basically a `subtype(t1, t2)` function which outputs how specific the two types are (lower value means more specific) when t1 <: t2 and Number.MAX_VALUE otherwise.
   // Note that child_type cannot be a union type.
