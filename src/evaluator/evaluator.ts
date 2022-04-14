@@ -118,7 +118,7 @@ const list_of_values = (expressions: Expression[]): (Primitive | Object)[] => {
   return expressions.map((expr) => evaluate(expr) as Primitive | Object);
 };
 
-const get_runtime_type = (value: any) => {
+const get_runtime_type = (value: any): string => {
   const type = typeof value;
 
   if (Array.isArray(value)) {
@@ -137,7 +137,12 @@ const get_runtime_type = (value: any) => {
     case typeof "string":
       return "String";
     case typeof {}:
-      return obj_to_runtime_types.get(value)?.base_name; // TODO
+      const rtype = obj_to_runtime_types.get(value)?.base_name; // TODO
+
+      if (!rtype) {
+        throw new Error(`Can't find object type ${value}!`);
+      }
+      return rtype;
     default:
       throw new Error(`Can't find type ${value}!`);
   }
@@ -183,10 +188,41 @@ const evaluate_name = (node: Name): Primitive | Object => {
   return env.lookup_name(node.name).value as Primitive | Object;
 };
 
+const throw_if_invalid_variable_declaration = (
+  old_atype: Type | null,
+  new_atype: Type | null,
+  new_rtype: Type
+) => {
+  if (old_atype) {
+    if (new_atype) {
+      throw new Error("Multiple type declaration is not allowed.");
+    } else if (!type_graph.is_subtype_of(new_rtype, old_atype)) {
+      throw new Error(
+        `Cannot convert an object of type ${new_rtype} to ${old_atype}`
+      );
+    }
+  } else if (new_atype) {
+    if (!type_graph.is_subtype_of(new_rtype, new_atype)) {
+      throw new Error(
+        `Cannot convert an object of type ${new_rtype} to ${new_atype}`
+      );
+    }
+  }
+};
 // Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
   const eval_result = evaluate(node.expr);
-  env.assign_name(node.name, eval_result!, node.atype ?? ANY);
+
+  let vnt = env.lookup_name(node.name);
+
+  if (is_var_val_and_type(vnt)) {
+    throw_if_invalid_variable_declaration(
+      vnt.type,
+      node.atype,
+      get_runtime_type(eval_result)
+    );
+  }
+  env.assign_name(node.name, eval_result!, node.atype);
 };
 
 // Function definition.

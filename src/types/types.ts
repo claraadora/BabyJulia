@@ -145,7 +145,7 @@ export type ValAndType = VarValAndType | FuncValAndType;
 
 export interface VarValAndType {
   value: Value | Array<Value> | null | Function;
-  type: Type;
+  type: Type | null;
 }
 
 export interface FuncValAndType {
