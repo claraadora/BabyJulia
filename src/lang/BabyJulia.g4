@@ -81,7 +81,7 @@ col: expr;
 arrElAssg: idxAccess ASSIGN expr;
 
 idxAccess:
-	name = NAME '[' startIdx = expr (',' endIdx = expr)? ']';
+	name = expr '[' startIdx = expr (',' endIdx = expr)? ']';
 
 forLoopStmt:
 	'for' name = NAME (
