@@ -22,7 +22,6 @@ function matrix_mult(A,B)
     for i = 1:numRowA
         # Iterate through cols of B. 
         for j in 1:numColB
-            result[i,j] = 0 
             # Iterate through rows of B. 
             for k = 1:numRowB
                 result[i,j] = result[i,j] + (A[i,k] * B[k,j])
