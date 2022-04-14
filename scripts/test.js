@@ -24,7 +24,7 @@ glob("examples/*.jl", (err, files) => {
       let output = evaluator.evaluate(parsed_program);
 
       // Format output if it's a 2d array
-      if (Array.isArray(output[0])) {
+      if (output && Array.isArray(output[0])) {
         output = sanitizer.format_2d_array(output);
       }
 
