@@ -479,6 +479,16 @@ function evaluate_index_access(node: IndexAccess) {
   const start_idx = evaluate(node.start_idx) as number;
   const end_idx = is_2D ? (evaluate(node.end_idx!) as number) : null;
 
+  validate_index_access(arr, start_idx, end_idx);
+
+  return is_2D && end_idx
+    ? arr[start_idx - 1][end_idx - 1]
+    : arr[start_idx - 1];
+}
+
+function validate_index_access(arr: Array<Value>, start_idx: number, end_idx: number | null) {
+  const is_2D = Array.isArray(arr[0]);
+
   // Check validity of start_idx.
   if (start_idx <= 0 || start_idx > arr.length) {
     throw new Error("Index out of bounds!");
@@ -490,13 +500,9 @@ function evaluate_index_access(node: IndexAccess) {
   }
 
   // Check validity of index access.
-  if (!is_2D && node.end_idx) {
+  if (!is_2D && end_idx) {
     throw new Error("Invalid 1D array index access!");
   }
-
-  return is_2D && end_idx
-    ? arr[start_idx - 1][end_idx - 1]
-    : arr[start_idx - 1];
 }
 
 // For loop
@@ -565,7 +571,6 @@ const evaluate_conditional_expression = (
 
 // Array element assignment.
 function evaluate_arr_element_assignment(node: ArrElementAssignment) {
-  // get the array, get the element, assign the value
   const arrEl = node.arrEl;
 
   const arr = env.lookup_name(arrEl.name).value as Array<Value>;
@@ -574,20 +579,7 @@ function evaluate_arr_element_assignment(node: ArrElementAssignment) {
   const start_idx = evaluate(arrEl.start_idx) as number;
   const end_idx = is_2D ? (evaluate(arrEl.end_idx!) as number) : null;
 
-  // Check validity of start_idx.
-  if (start_idx <= 0 || start_idx > arr.length) {
-    throw new Error("Index out of bounds!");
-  }
-
-  // Check validity of end_idx.
-  if (end_idx && (end_idx <= 0 || end_idx > Object.keys(arr[0]).length)) {
-    throw new Error("Index out of bounds!");
-  }
-
-  // Check validity of index access.
-  if (!is_2D && arrEl.end_idx) {
-    throw new Error("Invalid 1D array index access!");
-  }
+  validate_index_access(arr, start_idx, end_idx);
 
   const value = evaluate(node.expr) as Value;
   if (is_2D && end_idx) {
