@@ -454,7 +454,7 @@ const evaluate_binary_expression = (
   // String and String
   if (is_string(left) && is_string(right) && node.operator === "*") {
     return left + "" + right;
-  }
+}
 
   // Number and Number
   if (!(is_number(left) && is_number(right))) {

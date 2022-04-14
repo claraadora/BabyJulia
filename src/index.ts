@@ -12,7 +12,7 @@ function pretty_print(value: Value | void) {
   const header = chalk.hex("#f4b5f9").bold;
   const result = chalk.hex("#f5ecbb");
 
-  if (Array.isArray(value[0])) {
+  if (value && Array.isArray(value[0])) {
     value = format_2d_array(value as Value[]);
   }
 

@@ -9,7 +9,7 @@ function f(x::Union{Float64, Int64, Real})::Union{String, Int64}
 end
 
 function f(x::Union{Float64, Int64})::Union{Real}
-  return "hi"
+  return 123
 end
 
 # 3. absType supertype
@@ -23,5 +23,5 @@ struct Cat <: Union{Animal, Mammal, Feline}
 end
 
 # string - union
-f(1) # expected: "hi"
+f(1) # expected: 123
 
