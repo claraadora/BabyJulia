@@ -69,9 +69,7 @@ identifier: NAME;
 printExpr: 'println' '(' expr ')';
 
 // Array
-array: emptyArr | oneDArr | twoDArr;
-
-emptyArr: '[]';
+array: oneDArr | twoDArr;
 
 oneDArr: '[' cols ']';
 cols: col ( ',' col)*;
@@ -80,7 +78,7 @@ twoDArr: '[' rows ']';
 rows: (col+) ( ';' col+)*;
 col: expr;
 
-arrElAssg: name = idxAccess ASSIGN expr;
+arrElAssg: idxAccess ASSIGN expr;
 
 idxAccess:
 	name = NAME '[' startIdx = expr (',' endIdx = expr)? ']';

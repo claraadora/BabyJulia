@@ -46,7 +46,8 @@ export type Expression =
   | IndexAccess
   | ForLoop
   | RelationalExpression
-  | ConditionalExpression;
+  | ConditionalExpression
+  | ArrElementAssignment;
 
 export interface NumberLiteral {
   ntype: "NumberLiteral";
@@ -195,6 +196,12 @@ export interface RelationalExpression {
   operator: string;
   left: Expression;
   right: Expression;
+}
+
+export interface ArrElementAssignment {
+  ntype: "ArrElementAssignment";
+  arrEl: IndexAccess;
+  expr: Expression;
 }
 
 export type TypeVarInfo = {

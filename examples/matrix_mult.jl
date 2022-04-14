@@ -10,7 +10,7 @@ mat_B = [1 2; 3 4]
 # | 4 6 |
 
 function matrix_mult(A,B)
-    result = []
+    result = [0 0; 0 0]
     sizeA = size(A)
     sizeB = size(B)
 
@@ -29,6 +29,7 @@ function matrix_mult(A,B)
             end
         end
     end
+    return result
 end
 
-result = matrix_mult(mat_A, mat_B) # [4 6; 4 6]
+matrix_mult(mat_A, mat_B) # [4 6; 4 6]

@@ -32,6 +32,7 @@ import {
   is_struct_definition,
   Type,
   PlainType,
+  ArrElementAssignment,
 } from "./../types/types";
 import * as _ from "lodash";
 import { TypeGraph, TypeUtil } from "../type_graph/type_graph";
@@ -96,6 +97,8 @@ export const evaluate = (node: Node): Value | void => {
       return evaluate_relational_expression(node);
     case "ConditionalExpression":
       return evaluate_conditional_expression(node);
+    case "ArrElementAssignment":
+      return evaluate_arr_element_assignment(node);
     default:
   }
 };
@@ -491,7 +494,6 @@ function evaluate_index_access(node: IndexAccess) {
     throw new Error("Invalid 1D array index access!");
   }
 
-  // TODO: size(arr)[0] doesn't work.
   return is_2D && end_idx
     ? arr[start_idx - 1][end_idx - 1]
     : arr[start_idx - 1];
@@ -560,6 +562,42 @@ const evaluate_conditional_expression = (
 
   return predicate ? consequent : alternative;
 };
+
+// Array element assignment.
+function evaluate_arr_element_assignment(node: ArrElementAssignment) {
+  // get the array, get the element, assign the value
+  const arrEl = node.arrEl;
+
+  const arr = env.lookup_name(arrEl.name).value as Array<Value>;
+  const is_2D = Array.isArray(arr[0]);
+
+  const start_idx = evaluate(arrEl.start_idx) as number;
+  const end_idx = is_2D ? (evaluate(arrEl.end_idx!) as number) : null;
+
+  // Check validity of start_idx.
+  if (start_idx <= 0 || start_idx > arr.length) {
+    throw new Error("Index out of bounds!");
+  }
+
+  // Check validity of end_idx.
+  if (end_idx && (end_idx <= 0 || end_idx > Object.keys(arr[0]).length)) {
+    throw new Error("Index out of bounds!");
+  }
+
+  // Check validity of index access.
+  if (!is_2D && arrEl.end_idx) {
+    throw new Error("Invalid 1D array index access!");
+  }
+
+  const value = evaluate(node.expr) as Value;
+  if (is_2D && end_idx) {
+    arr[start_idx - 1][end_idx - 1] = value;
+  } else {
+    arr[start_idx - 1] = value;
+  }
+
+  return;
+}
 
 export const clear_only_if_you_are_sure_and_are_debugging = () => {
   // Type graph.
