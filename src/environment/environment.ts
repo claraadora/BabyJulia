@@ -47,7 +47,7 @@ export class EnvStack {
     return frame.get(name) as FuncValAndType[];
   }
 
-  assign_name(name: string, value: Primitive | Object, type: Type) {
+  assign_name(name: string, value: Primitive | Object, type: Type | null) {
     let frame = this.find_nearest_frame(name);
     frame.assign_name(name, value, type);
   }
@@ -107,7 +107,7 @@ class EnvFrame {
     return this.name_to_vals[name];
   }
 
-  assign_name(name: string, value: Primitive | Object, type: Type) {
+  assign_name(name: string, value: Primitive | Object, type: Type | null) {
     let vnt_arr = this.get(name);
 
     // TODO: add checks here
