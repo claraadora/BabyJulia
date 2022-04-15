@@ -233,7 +233,7 @@ const evaluate_function_definition = (node: FunctionDefinition) => {
   env.assign_fname(
     node.name,
     node.body,
-    node.params.map((param) => param.atype ?? ANY),
+    node.params.map((param) => param.atype),
     node.params.map((param) => param.name),
     node.return_type ?? ANY,
     env.clone()
@@ -259,14 +259,20 @@ function get_evaluated_return_value(
 }
 
 // Function Application
-function get_specificity_score(arg_types: Type[], param_types: Type[]) {
+function get_specificity_score(
+  arg_types: Type[],
+  param_types: (Type | null)[]
+) {
   // Functions don't match if they have different number of parameters.
   if (arg_types.length !== param_types.length) {
     return Infinity;
   }
   let specificity_score = 0;
   for (let i = 0; i < param_types.length; i++) {
-    const distance = type_graph.get_distance_from(arg_types[i], param_types[i]);
+    const distance = type_graph.get_distance_from(
+      arg_types[i],
+      param_types[i] ?? ANY
+    );
     if (distance === Infinity) return Infinity;
     specificity_score += distance;
   }
@@ -307,7 +313,7 @@ function construct(name: string, arg_vals: (Primitive | Object)[]) {
     (arg_type, idx) =>
       type_graph.get_distance_from(
         arg_type as PlainType, // TODO: currently arg type cmn bisa plain type.
-        funcValAndType.param_types[idx]
+        funcValAndType.param_types[idx] ?? ANY
       ) === -1 // can't find path from arg type to param type
   );
 

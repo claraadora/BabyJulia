@@ -6,11 +6,7 @@ import {
   ValAndType,
   Value,
 } from "./../types/types";
-import {
-  ExpressionSequence,
-  FunctionDefinition,
-  VariableDefinition,
-} from "../types/types";
+import { ExpressionSequence } from "../types/types";
 import * as _ from "lodash";
 
 export class EnvStack {
@@ -55,7 +51,7 @@ export class EnvStack {
   assign_fname(
     name: string,
     value: ExpressionSequence | Function,
-    param_types: Type[],
+    param_types: (Type | null)[],
     param_names: string[],
     return_type: Type,
     env_stack: EnvStack
@@ -118,7 +114,7 @@ class EnvFrame {
   assign_fname(
     name: string,
     value: ExpressionSequence | Function,
-    param_types: Type[],
+    param_types: (Type | null)[],
     param_names: string[],
     return_type: Type,
     env_stack: EnvStack

@@ -151,7 +151,7 @@ export interface VarValAndType {
 
 export interface FuncValAndType {
   value: ExpressionSequence | null | Function;
-  param_types: Type[];
+  param_types: (Type | null)[];
   param_names: string[];
   return_type: Type | null;
   env_stack: EnvStack;
