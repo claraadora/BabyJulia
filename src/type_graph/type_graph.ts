@@ -64,8 +64,8 @@ export class TypeGraph {
 
   is_connected(node1: Type, node2: Type): boolean {
     return (
-      this.get_distance_from(node1, node2) !== Number.MAX_VALUE ||
-      this.get_distance_from(node2, node1) !== Number.MAX_VALUE
+      this.get_distance_from(node1, node2) !== Infinity ||
+      this.get_distance_from(node2, node1) !== Infinity
     );
   }
 
@@ -74,7 +74,7 @@ export class TypeGraph {
       return false;
     }
 
-    return this.get_distance_from(child, parent) !== Number.MAX_VALUE;
+    return this.get_distance_from(child, parent) !== Infinity;
   }
 
   condense_union(union: Type[]): Type[] | PlainType {
@@ -109,11 +109,11 @@ export class TypeGraph {
   }
 
   is_subtype_of(child_type: Type, parent_type: Type) {
-    return this.get_distance_from(child_type, parent_type) !== Number.MAX_VALUE;
+    return this.get_distance_from(child_type, parent_type) !== Infinity;
   }
 
   // Get distance from child node to parent node by traversing up the graph. If unreachable, -1 is returned.
-  // Basically a `subtype(t1, t2)` function which outputs how specific the two types are (lower value means more specific) when t1 <: t2 and Number.MAX_VALUE otherwise.
+  // Basically a `subtype(t1, t2)` function which outputs how specific the two types are (lower value means more specific) when t1 <: t2 and Infinity otherwise.
   // Note that child_type cannot be a union type.
   get_distance_from(child_type: Type, parent_type: Type) {
     // string - string
@@ -127,7 +127,7 @@ export class TypeGraph {
         ptr = ptr.parent;
         distance++;
       }
-      return ptr === parent_node ? distance : Number.MAX_VALUE;
+      return ptr === parent_node ? distance : Infinity;
     }
 
     // string - union
@@ -140,7 +140,7 @@ export class TypeGraph {
       }
 
       console.log("condensed: ", condensed_parent_union);
-      let shortest_dist = Number.MAX_VALUE;
+      let shortest_dist = Infinity;
       for (let paren_type of condensed_parent_union) {
         // TODO:
         shortest_dist = Math.min(
@@ -151,7 +151,7 @@ export class TypeGraph {
       return shortest_dist;
     }
 
-    return Number.MAX_VALUE;
+    return Infinity;
   }
 }
 

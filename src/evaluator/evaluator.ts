@@ -262,12 +262,12 @@ function get_evaluated_return_value(
 function get_specificity_score(arg_types: Type[], param_types: Type[]) {
   // Functions don't match if they have different number of parameters.
   if (arg_types.length !== param_types.length) {
-    return Number.MAX_VALUE;
+    return Infinity;
   }
   let specificity_score = 0;
   for (let i = 0; i < param_types.length; i++) {
     const distance = type_graph.get_distance_from(arg_types[i], param_types[i]);
-    if (distance === Number.MAX_VALUE) return Number.MAX_VALUE;
+    if (distance === Infinity) return Infinity;
     specificity_score += distance;
   }
   return specificity_score;
@@ -283,7 +283,7 @@ function get_most_specific_function(
 
   const min_score = Math.min(...func_scores);
 
-  if (min_score === Number.MAX_VALUE) throw new Error("No function found");
+  if (min_score === Infinity) throw new Error("No function found");
 
   // Check if there are more than one "most" specific functions.
   const score_count = _.countBy(func_scores);
@@ -371,7 +371,7 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
     type_graph.get_distance_from(
       eval_result_runtime_type!,
       func.return_type
-    ) === Number.MAX_VALUE // result type not <: atype
+    ) === Infinity // result type not <: atype
   ) {
     throw new Error(
       `The atype of function ${name} is ${func.return_type}, but it returns value of type ${eval_result_runtime_type}`
@@ -454,11 +454,13 @@ const evaluate_binary_expression = (
   // String and String
   if (is_string(left) && is_string(right) && node.operator === "*") {
     return left + "" + right;
-}
+  }
 
   // Number and Number
   if (!(is_number(left) && is_number(right))) {
-    throw new Error(`Invalid binary expression operand type(s): ${left} ${node.operator} ${right}`);
+    throw new Error(
+      `Invalid binary expression operand type(s): ${left} ${node.operator} ${right}`
+    );
   }
 
   switch (node.operator) {
@@ -522,7 +524,11 @@ function evaluate_index_access(node: IndexAccess) {
     : arr[start_idx - 1];
 }
 
-function validate_index_access(arr: Array<Value>, start_idx: number, end_idx: number | null) {
+function validate_index_access(
+  arr: Array<Value>,
+  start_idx: number,
+  end_idx: number | null
+) {
   const is_2D = Array.isArray(arr[0]);
 
   // Check validity of start_idx.
