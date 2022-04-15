@@ -139,7 +139,6 @@ export class TypeGraph {
         condensed_parent_union = [condensed_parent_union];
       }
 
-      console.log("condensed: ", condensed_parent_union);
       let shortest_dist = Infinity;
       for (let paren_type of condensed_parent_union) {
         // TODO:
