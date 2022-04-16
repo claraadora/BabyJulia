@@ -215,7 +215,6 @@ const throw_if_invalid_variable_declaration = (
 // Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
   const eval_result = evaluate(node.expr);
-
   let vnt = env.lookup_name(node.name);
 
   if (is_var_val_and_type(vnt)) {
@@ -225,6 +224,9 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
       get_runtime_type(eval_result)
     );
   }
+
+  check_return_type_against_atype(node.name, eval_result, node.atype);
+
   env.assign_name(node.name, eval_result!, node.atype);
 };
 
@@ -370,28 +372,24 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
   env = func.env_stack;
   const eval_result = evaluate(func.value as Node);
 
-  // if function has atype, check runtime type of eval_result against the func.atype
-  const eval_result_runtime_type = get_runtime_type(eval_result);
-  if (
-    func.return_type &&
-    type_graph.get_distance_from(
-      eval_result_runtime_type!,
-      func.return_type
-    ) === Infinity // result type not <: atype
-  ) {
-    throw new Error(
-      `The atype of function ${name} is ${func.return_type}, but it returns value of type ${eval_result_runtime_type}`
-    );
-  }
+  check_return_type_against_atype(name, eval_result, func.return_type);
 
   env = env_to_restore;
   return eval_result;
 }
 
-// TODO
-function check_func_return_type_against_atype() {
-  // If atype is string
-  // If atype is union
+function check_return_type_against_atype(name: string, eval_result: Value | void, atype: Type | null) {
+  // Terminates early if there is no atype, as value can take in any type.
+  if (!atype) {
+    return;
+  }
+
+  const eval_result_runtime_type = get_runtime_type(eval_result);
+  if (!type_graph.is_subtype_of(eval_result_runtime_type, atype)) {
+    throw new Error(
+      `The atype of ${name} is ${atype}, but it returns value of type ${eval_result_runtime_type}`
+    );
+  }
 }
 
 function make_constructor_function(fields: StructField[]) {
