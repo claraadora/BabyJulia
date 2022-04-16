@@ -215,7 +215,6 @@ const throw_if_invalid_variable_declaration = (
 // Variable definition.
 const evaluate_variable_declaration = (node: VariableDefinition) => {
   const eval_result = evaluate(node.expr);
-
   let vnt = env.lookup_name(node.name);
 
   if (is_var_val_and_type(vnt)) {
@@ -225,6 +224,9 @@ const evaluate_variable_declaration = (node: VariableDefinition) => {
       get_runtime_type(eval_result)
     );
   }
+
+  check_return_type_against_atype(node.name, eval_result, node.atype);
+
   env.assign_name(node.name, eval_result!, node.atype);
 };
 
@@ -385,7 +387,7 @@ function check_return_type_against_atype(name: string, eval_result: Value | void
   const eval_result_runtime_type = get_runtime_type(eval_result);
   if (!type_graph.is_subtype_of(eval_result_runtime_type, atype)) {
     throw new Error(
-      `The atype of function ${name} is ${atype}, but it returns value of type ${eval_result_runtime_type}`
+      `The atype of ${name} is ${atype}, but it returns value of type ${eval_result_runtime_type}`
     );
   }
 }
