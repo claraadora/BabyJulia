@@ -9,10 +9,10 @@ function myplus(x::Int64)
     return x
 end 
 
-function myplus(x::Int64, y::String)::String
+function myplus(x::Int64, y::String)::Union{String, Int64, Real}
     x = 3 
     y = "Hello " * y
-    return y 
+    return y
 end 
 
 println(myplus(1, "Johanna")) # "Hello Johanna"
