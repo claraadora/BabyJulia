@@ -23,7 +23,7 @@ A grammar, parser, and interpreter for a subset of Julia that showcases Julia’
 ### Building 
 ```bash
 yarn install # to install necessary dependencies 
-yarn antlr4ts # to general ANTLR's lexer, parser, and visitor 
+yarn antlr4ts # to generate ANTLR's lexer, parser, and visitor 
 yarn build # to compile BabyJulia's parser and evaluator 
 ```
 ### Evaluating Programs 
@@ -32,7 +32,7 @@ yarn eval <the name of the file to be parsed and evaluated>
 ```
 For example, 
 ```
-yarn eval examples/func_def.jl
+yarn eval examples/multiple_dispatch.jl
 ```
 ### Running Tests 
 #### Running Single Sample Test 
@@ -44,10 +44,9 @@ yarn t
 The output of each of the tests would be compared 
 against the output stated in the examples/<test_name>_expected.txt. Note that each test file should be accompanied by a <test_name>_expected.txt file, otherwise the test would be considered failing. 
 
-
 ## Examples
 ### Evaluating Multiple Dispatch
-Let’s take a look at multiple dispatch in action. The example that’s used can be found in examples/multiple_dispatch.jl and can be run using the command `yarn eval examples/multiple_dispatch.jl` after building the project (refer to section “Building”). 
+Let’s take a look at multiple dispatch in action. The example that’s used can be found in examples/multiple_dispatch.jl and can be run using the command `yarn eval examples/multiple_dispatch.jl` after building the project (refer to the “Building” section). 
 
 In this example, we define 2 structs – Rectangle and Circle – that inherit from the abstract type Shape, and instantiate them. 
 ```julia
@@ -93,7 +92,7 @@ Lastly, when we call intersect on Circle and Circle instances, there is only one
 println(intersect(c,c)) # falls back and prints “Shape x Shape”
 ```
 ### Evaluating Multiple Dispatch with Union Types 
-Let’s take a look at multiple dispatch and union types in action. The example that’s used can be found in examples/multiple_dispatch_union.jl and can be run using the command yarn eval examples/multiple_dispatch_union.jl after building the project (refer to section 3.1 “Building”). 
+Let’s take a look at multiple dispatch and union types in action. The example that’s used can be found in examples/multiple_dispatch_union.jl and can be run using the command yarn eval examples/multiple_dispatch_union.jl after building the project (refer to the “Building” section). 
 
 In this example, we define 3 structs – Rectangle, Circle, and Square – that inherit from the abstract type Shape, and instantiate them. 
 ```julia
