@@ -23,7 +23,7 @@ function pretty_print(value: Value | void) {
 }
 
 function main() {
-  const file_name = argv[3]; // TODO: brittle
+  const file_name = argv[3];
   const program = fs.readFileSync(file_name, "utf8");
 
   const parsed_program = parse(program);

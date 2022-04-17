@@ -1,42 +1,23 @@
-abstract type Human end 
-struct BabyHuman <: Human
-    name::String 
-    pottyTrainingLevel::Int64
-end 
-struct AdultHuman <: Human
-    name::String
-    job::String
-end 
-
-abstract type Emotion end 
-struct Happy <: Emotion
-    name::String
-end 
-struct Sad <: Emotion
-    name::String
-end 
-
-# Construct 
-julia = BabyHuman("Julia", 1)
-profIlya = AdultHuman("Prof Ilya", "Professor")
-
-happy = Happy("happy")
-sad = Sad("sad")
-
-function setMood(human::Human, emotion::Emotion) 
-    return human.name * ": " * "* mood set to " * emotion.name * " *"
+abstract type Shape end
+struct Rectangle <: Shape 
+end
+struct Circle <: Shape 
 end
 
-function setMood(baby::BabyHuman, emotion::Sad) 
-    return baby.name * ": " * "hue hue hue hue....."
+r1 = Rectangle()
+r2 = Rectangle() 
+c = Circle()
+
+function intersect(rectangle::Rectangle, circle::Circle)
+    return "Rectangle x Circle "
 end
-
-function setMood(baby::AdultHuman, emotion::Sad) 
-    return baby.name * ": " * "I'm feeling blue..."
+function intersect(rectangle1::Rectangle, rectangle2::Rectangle)
+    return "Rectangle x Rectangle"
 end
+function intersect(shape1::Shape, shape2::Shape) # fallback method 
+    return "Shape x Shape"
+end 
 
-println(setMood(julia, happy))
-println(setMood(profIlya, happy))
-
-println(setMood(julia, sad))
-setMood(profIlya, sad)
+println(intersect(r1, c)) 
+println(intersect(r1, r2)) 
+intersect(c, c) # falls back

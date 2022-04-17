@@ -105,7 +105,7 @@ class NodeGenerator implements BabyJuliaVisitor<Node | Type | null> {
     const ctx = temp_ctx.STRING();
     return {
       ntype: "StringLiteral",
-      value: ctx.text.replace(/['"]+/g, ""), // TODO: hacky
+      value: ctx.text.replace(/['"]+/g, ""),
     };
   }
 
