@@ -20,4 +20,4 @@ function intersect(shape1::Shape, shape2::Shape) # fallback method
 end
 println(intersect(r, c)) 
 println(intersect(sq, c)) 
-println(intersect(c, c)) # falls back 
+intersect(c, c) # falls back

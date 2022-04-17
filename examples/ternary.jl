@@ -8,4 +8,4 @@ function g(x)
 end
 
 println(g(1)) # 1
-println(g(5)) # 3
+g(5) # 3

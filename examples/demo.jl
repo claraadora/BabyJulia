@@ -20,4 +20,4 @@ end
 
 println(intersect(r1, c)) 
 println(intersect(r1, r2)) 
-println(intersect(c, c)) # falls back 
+intersect(c, c) # falls back

@@ -24,4 +24,4 @@ println(g(1)) # 2
 # Type unstable!
 #     Consequent 5 is of type Int64,
 #     whereas alternative x - 2 is of type String
-println(g(5)) # x - 2
+g(5) # "x - 2"
