@@ -39,7 +39,7 @@ yarn eval examples/func_def.jl
 Follow the step in "Evaluating Programs" section above.
 #### Running All Sample Tests 
 ```
-yarn test 
+yarn t 
 ```
 The output of each of the tests would be compared 
 against the output stated in the examples/<test_name>_expected.txt. Note that each test file should be accompanied by a <test_name>_expected.txt file, otherwise the test would be considered failing. 
