@@ -21,12 +21,11 @@ expr:
 	| left = expr operator = (EQ | NEQ | GT | GTE | LT | LTE) right = expr			# RelationalExpression
 	| predicate = expr '?' consequent = expr ':' alternative = expr					# ConditionalExpression
 	| array																			# Arr
-	| name = expr '[' startIdx = expr (',' endIdx = expr)? ']' ASSIGN value = expr	#
-		ArrElementAssignment
-	| NUMBER				# Number
-	| '(' inner = expr ')'	# Parentheses
-	| STRING				# String
-	| BOOL					# Boolean;
+	| name = expr '[' startIdx = expr (',' endIdx = expr)? ']' ASSIGN value = expr	# ArrElementAssignment
+	| NUMBER																		# Number
+	| '(' inner = expr ')'															# Parentheses
+	| STRING																		# String
+	| BOOL																			# Boolean;
 
 // 1. Variable Definition
 varDef: name = NAME (INSTANCE_OF atype = type)? ASSIGN expr;
