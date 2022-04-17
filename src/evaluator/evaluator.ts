@@ -140,7 +140,7 @@ const get_runtime_type = (value: any): string => {
     case typeof "string":
       return "String";
     case typeof {}:
-      const rtype = obj_to_runtime_types.get(value)?.base_name; // TODO
+      const rtype = obj_to_runtime_types.get(value)?.base_name;
 
       if (!rtype) {
         throw new Error(`Can't find object type ${value}!`);
@@ -314,7 +314,7 @@ function construct(name: string, arg_vals: (Primitive | Object)[]) {
   const invalid_arg_types = arg_types.filter(
     (arg_type, idx) =>
       type_graph.get_distance_from(
-        arg_type as PlainType, // TODO: currently arg type cmn bisa plain type.
+        arg_type as PlainType,
         funcValAndType.param_types[idx] ?? ANY
       ) === -1 // can't find path from arg type to param type
   );
@@ -367,7 +367,6 @@ function apply(name: string, arg_vals: (Primitive | Object)[]) {
     )
   );
 
-  // TODO: quite hackish haha
   const env_to_restore = env;
   env = func.env_stack;
   const eval_result = evaluate(func.value as Node);
@@ -594,7 +593,6 @@ const evaluate_conditional_expression = (
   const consequent = evaluate(node.consequent) as Expression;
   const alternative = evaluate(node.alternative) as Expression;
 
-  // TODO: abstract out
   const consequent_runtime_type = get_runtime_type(consequent);
   const alternative_runtime_type = get_runtime_type(alternative);
   if (consequent_runtime_type !== alternative_runtime_type) {
