@@ -4,28 +4,29 @@ grammar BabyJulia;
 program: exprSequence EOF;
 exprSequence: (expr (NEWLINE)* | NEWLINE)*;
 expr:
-	varDef																	# VarDefinition
-	| funcDef																# FuncDefinition
-	| funcApp																# FuncApplication
-	| structDef																# StructDefinition
-	| fldAccess																# FieldAccess
-  | name = expr '[' startIdx = expr (',' endIdx = expr)? ']' # IndexAccess
-	| absTypeDeclr															# AbstractTypeDeclaration
-	| identifier															# Name
-	| returnStmt															# ReturnStatement
-	| printExpr																# PrintExpression
-	| forLoopStmt															# ForLoop
-	| <assoc = right> left = expr operator = POW right = expr				# Power
-	| left = expr operator = (MUL | DIV) right = expr						# MultDiv
-	| left = expr operator = (ADD | SUB) right = expr						# AddSub
-	| left = expr operator = (EQ | NEQ | GT | GTE | LT | LTE) right = expr	# RelationalExpression
-	| predicate = expr '?' consequent = expr ':' alternative = expr			# ConditionalExpression
-  | array																	# Arr
-  | name = expr '[' startIdx = expr (',' endIdx = expr)? ']' ASSIGN value = expr # ArrElementAssignment
-	| NUMBER																# Number
-	| '(' inner = expr ')'													# Parentheses
-	| STRING																# String
-	| BOOL																	# Boolean;
+	varDef																			# VarDefinition
+	| funcDef																		# FuncDefinition
+	| funcApp																		# FuncApplication
+	| structDef																		# StructDefinition
+	| fldAccess																		# FieldAccess
+	| name = expr '[' startIdx = expr (',' endIdx = expr)? ']'						# IndexAccess
+	| absTypeDeclr																	# AbstractTypeDeclaration
+	| identifier																	# Name
+	| returnStmt																	# ReturnStatement
+	| printExpr																		# PrintExpression
+	| forLoopStmt																	# ForLoop
+	| <assoc = right> left = expr operator = POW right = expr						# Power
+	| left = expr operator = (MUL | DIV) right = expr								# MultDiv
+	| left = expr operator = (ADD | SUB) right = expr								# AddSub
+	| left = expr operator = (EQ | NEQ | GT | GTE | LT | LTE) right = expr			# RelationalExpression
+	| predicate = expr '?' consequent = expr ':' alternative = expr					# ConditionalExpression
+	| array																			# Arr
+	| name = expr '[' startIdx = expr (',' endIdx = expr)? ']' ASSIGN value = expr	#
+		ArrElementAssignment
+	| NUMBER				# Number
+	| '(' inner = expr ')'	# Parentheses
+	| STRING				# String
+	| BOOL					# Boolean;
 
 // 1. Variable Definition
 varDef: name = NAME (INSTANCE_OF atype = type)? ASSIGN expr;
