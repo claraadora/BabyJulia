@@ -141,7 +141,6 @@ export class TypeGraph {
 
       let shortest_dist = Infinity;
       for (let paren_type of condensed_parent_union) {
-        // TODO:
         shortest_dist = Math.min(
           shortest_dist,
           this.get_distance_from(child_type, paren_type)
