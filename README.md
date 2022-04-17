@@ -1,4 +1,4 @@
-<p align="center"><img width="30%" src="logo.png" alt="Logo" /></p>
+<p align="center"><img width="20%" src="logo.png" alt="Logo" /></p>
 <h1 align="center">BabyJulia</h1>
 
 ## Overview
