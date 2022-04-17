@@ -16,8 +16,8 @@ function intersect(rectangle1::Rectangle, rectangle2::Rectangle)
 end
 function intersect(shape1::Shape, shape2::Shape) # fallback method 
     return "Shape x Shape"
-end 
+end
 
-println(intersect(r1, c)) 
-println(intersect(r1, r2)) 
-intersect(c, c) # falls back
+println(intersect(r1, c)) # prints "Rectangle x Circle"
+println(intersect(r1, r2)) # prints "Rectangle x Rectangle"
+intersect(c, c) # falls back and prints "Shape x Shape"
